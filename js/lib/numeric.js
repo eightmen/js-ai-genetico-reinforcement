@@ -57,3 +57,88 @@ numeric.prettyPrint = function prettyPrint(x) {
         if(typeof x === "string") { ret.push('"'+x+'"'); return false; }
         if(typeof x === "boolean") { ret.push(x.toString()); return false; }
         if(typeof x === "number") {
+            var a = fmtnum(x);
+            var b = x.toPrecision(numeric.precision);
+            var c = parseFloat(x.toString()).toString();
+            var d = [a,b,c,parseFloat(b).toString(),parseFloat(c).toString()];
+            for(k=1;k<d.length;k++) { if(d[k].length < a.length) a = d[k]; }
+            ret.push(Array(numeric.precision+8-a.length).join(' ')+a);
+            return false;
+        }
+        if(x === null) { ret.push("null"); return false; }
+        if(typeof x === "function") { 
+            ret.push(x.toString());
+            var flag = false;
+            for(k in x) { if(x.hasOwnProperty(k)) { 
+                if(flag) ret.push(',\n');
+                else ret.push('\n{');
+                flag = true; 
+                ret.push(k); 
+                ret.push(': \n'); 
+                foo(x[k]); 
+            } }
+            if(flag) ret.push('}\n');
+            return true;
+        }
+        if(x instanceof Array) {
+            if(x.length > numeric.largeArray) { ret.push('...Large Array...'); return true; }
+            var flag = false;
+            ret.push('[');
+            for(k=0;k<x.length;k++) { if(k>0) { ret.push(','); if(flag) ret.push('\n '); } flag = foo(x[k]); }
+            ret.push(']');
+            return true;
+        }
+        ret.push('{');
+        var flag = false;
+        for(k in x) { if(x.hasOwnProperty(k)) { if(flag) ret.push(',\n'); flag = true; ret.push(k); ret.push(': \n'); foo(x[k]); } }
+        ret.push('}');
+        return true;
+    }
+    foo(x);
+    return ret.join('');
+}
+
+numeric.parseDate = function parseDate(d) {
+    function foo(d) {
+        if(typeof d === 'string') { return Date.parse(d.replace(/-/g,'/')); }
+        if(!(d instanceof Array)) { throw new Error("parseDate: parameter must be arrays of strings"); }
+        var ret = [],k;
+        for(k=0;k<d.length;k++) { ret[k] = foo(d[k]); }
+        return ret;
+    }
+    return foo(d);
+}
+
+numeric.parseFloat = function parseFloat_(d) {
+    function foo(d) {
+        if(typeof d === 'string') { return parseFloat(d); }
+        if(!(d instanceof Array)) { throw new Error("parseFloat: parameter must be arrays of strings"); }
+        var ret = [],k;
+        for(k=0;k<d.length;k++) { ret[k] = foo(d[k]); }
+        return ret;
+    }
+    return foo(d);
+}
+
+numeric.parseCSV = function parseCSV(t) {
+    var foo = t.split('\n');
+    var j,k;
+    var ret = [];
+    var pat = /(([^'",]*)|('[^']*')|("[^"]*")),/g;
+    var patnum = /^\s*(([+-]?[0-9]+(\.[0-9]*)?(e[+-]?[0-9]+)?)|([+-]?[0-9]*(\.[0-9]+)?(e[+-]?[0-9]+)?))\s*$/;
+    var stripper = function(n) { return n.substr(0,n.length-1); }
+    var count = 0;
+    for(k=0;k<foo.length;k++) {
+      var bar = (foo[k]+",").match(pat),baz;
+      if(bar.length>0) {
+          ret[count] = [];
+          for(j=0;j<bar.length;j++) {
+              baz = stripper(bar[j]);
+              if(patnum.test(baz)) { ret[count][j] = parseFloat(baz); }
+              else ret[count][j] = baz;
+          }
+          count++;
+      }
+    }
+    return ret;
+}
