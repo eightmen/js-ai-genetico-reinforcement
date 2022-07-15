@@ -255,3 +255,90 @@ numeric.imageURL = function imageURL(img) {
     stream[32] = (crc32)&255;
     s1 = 1;
     s2 = 0;
+    for(i=0;i<h;i++) {
+        if(i<h-1) { stream.push(0); }
+        else { stream.push(1); }
+        a = (3*w+1+(i===0))&255; b = ((3*w+1+(i===0))>>8)&255;
+        stream.push(a); stream.push(b);
+        stream.push((~a)&255); stream.push((~b)&255);
+        if(i===0) stream.push(0);
+        for(j=0;j<w;j++) {
+            for(k=0;k<3;k++) {
+                a = img[k][i][j];
+                if(a>255) a = 255;
+                else if(a<0) a=0;
+                else a = Math.round(a);
+                s1 = (s1 + a )%65521;
+                s2 = (s2 + s1)%65521;
+                stream.push(a);
+            }
+        }
+        stream.push(0);
+    }
+    adler32 = (s2<<16)+s1;
+    stream.push((adler32>>24)&255);
+    stream.push((adler32>>16)&255);
+    stream.push((adler32>>8)&255);
+    stream.push((adler32)&255);
+    length = stream.length - 41;
+    stream[33] = (length>>24)&255;
+    stream[34] = (length>>16)&255;
+    stream[35] = (length>>8)&255;
+    stream[36] = (length)&255;
+    crc32 = crc32Array(stream,37);
+    stream.push((crc32>>24)&255);
+    stream.push((crc32>>16)&255);
+    stream.push((crc32>>8)&255);
+    stream.push((crc32)&255);
+    stream.push(0);
+    stream.push(0);
+    stream.push(0);
+    stream.push(0);
+//    a = stream.length;
+    stream.push(73);  // I
+    stream.push(69);  // E
+    stream.push(78);  // N
+    stream.push(68);  // D
+    stream.push(174); // CRC1
+    stream.push(66);  // CRC2
+    stream.push(96);  // CRC3
+    stream.push(130); // CRC4
+    return 'data:image/png;base64,'+base64(stream);
+}
+
+// 2. Linear algebra with Arrays.
+numeric._dim = function _dim(x) {
+    var ret = [];
+    while(typeof x === "object") { ret.push(x.length); x = x[0]; }
+    return ret;
+}
+
+numeric.dim = function dim(x) {
+    var y,z;
+    if(typeof x === "object") {
+        y = x[0];
+        if(typeof y === "object") {
+            z = y[0];
+            if(typeof z === "object") {
+                return numeric._dim(x);
+            }
+            return [x.length,y.length];
+        }
+        return [x.length];
+    }
+    return [];
+}
+
+numeric.mapreduce = function mapreduce(body,init) {
+    return Function('x','accum','_s','_k',
+            'if(typeof accum === "undefined") accum = '+init+';\n'+
+            'if(typeof x === "number") { var xi = x; '+body+'; return accum; }\n'+
+            'if(typeof _s === "undefined") _s = numeric.dim(x);\n'+
+            'if(typeof _k === "undefined") _k = 0;\n'+
+            'var _n = _s[_k];\n'+
+            'var i,xi;\n'+
+            'if(_k < _s.length-1) {\n'+
+            '    for(i=_n-1;i>=0;i--) {\n'+
+            '        accum = arguments.callee(x[i],accum,_s,_k+1);\n'+
+            '    }'+
+            '    return accum;\n'+
