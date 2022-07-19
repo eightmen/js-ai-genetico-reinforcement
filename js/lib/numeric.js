@@ -342,3 +342,69 @@ numeric.mapreduce = function mapreduce(body,init) {
             '        accum = arguments.callee(x[i],accum,_s,_k+1);\n'+
             '    }'+
             '    return accum;\n'+
+            '}\n'+
+            'for(i=_n-1;i>=1;i-=2) { \n'+
+            '    xi = x[i];\n'+
+            '    '+body+';\n'+
+            '    xi = x[i-1];\n'+
+            '    '+body+';\n'+
+            '}\n'+
+            'if(i === 0) {\n'+
+            '    xi = x[i];\n'+
+            '    '+body+'\n'+
+            '}\n'+
+            'return accum;'
+            );
+}
+numeric.mapreduce2 = function mapreduce2(body,setup) {
+    return Function('x',
+            'var n = x.length;\n'+
+            'var i,xi;\n'+setup+';\n'+
+            'for(i=n-1;i!==-1;--i) { \n'+
+            '    xi = x[i];\n'+
+            '    '+body+';\n'+
+            '}\n'+
+            'return accum;'
+            );
+}
+
+
+numeric.same = function same(x,y) {
+    var i,n;
+    if(!(x instanceof Array) || !(y instanceof Array)) { return false; }
+    n = x.length;
+    if(n !== y.length) { return false; }
+    for(i=0;i<n;i++) {
+        if(x[i] === y[i]) { continue; }
+        if(typeof x[i] === "object") { if(!same(x[i],y[i])) return false; }
+        else { return false; }
+    }
+    return true;
+}
+
+numeric.rep = function rep(s,v,k) {
+    if(typeof k === "undefined") { k=0; }
+    var n = s[k], ret = Array(n), i;
+    if(k === s.length-1) {
+        for(i=n-2;i>=0;i-=2) { ret[i+1] = v; ret[i] = v; }
+        if(i===-1) { ret[0] = v; }
+        return ret;
+    }
+    for(i=n-1;i>=0;i--) { ret[i] = numeric.rep(s,v,k+1); }
+    return ret;
+}
+
+
+numeric.dotMMsmall = function dotMMsmall(x,y) {
+    var i,j,k,p,q,r,ret,foo,bar,woo,i0,k0,p0,r0;
+    p = x.length; q = y.length; r = y[0].length;
+    ret = Array(p);
+    for(i=p-1;i>=0;i--) {
+        foo = Array(r);
+        bar = x[i];
+        for(k=r-1;k>=0;k--) {
+            woo = bar[q-1]*y[q-1][k];
+            for(j=q-2;j>=1;j-=2) {
+                i0 = j-1;
+                woo += bar[j]*y[j][k] + bar[i0]*y[i0][k];
+            }
