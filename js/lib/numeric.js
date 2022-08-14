@@ -596,3 +596,85 @@ numeric._biforeach2 = (function _biforeach2(x,y,s,k,f) {
     for(i=n-1;i>=0;--i) { ret[i] = _biforeach2(typeof x==="object"?x[i]:x,typeof y==="object"?y[i]:y,s,k+1,f); }
     return ret;
 });
+numeric._foreach = (function _foreach(x,s,k,f) {
+    if(k === s.length-1) { f(x); return; }
+    var i,n=s[k];
+    for(i=n-1;i>=0;i--) { _foreach(x[i],s,k+1,f); }
+});
+numeric._foreach2 = (function _foreach2(x,s,k,f) {
+    if(k === s.length-1) { return f(x); }
+    var i,n=s[k], ret = Array(n);
+    for(i=n-1;i>=0;i--) { ret[i] = _foreach2(x[i],s,k+1,f); }
+    return ret;
+});
+
+/*numeric.anyV = numeric.mapreduce('if(xi) return true;','false');
+numeric.allV = numeric.mapreduce('if(!xi) return false;','true');
+numeric.any = function(x) { if(typeof x.length === "undefined") return x; return numeric.anyV(x); }
+numeric.all = function(x) { if(typeof x.length === "undefined") return x; return numeric.allV(x); }*/
+
+numeric.ops2 = {
+        add: '+',
+        sub: '-',
+        mul: '*',
+        div: '/',
+        mod: '%',
+        and: '&&',
+        or:  '||',
+        eq:  '===',
+        neq: '!==',
+        lt:  '<',
+        gt:  '>',
+        leq: '<=',
+        geq: '>=',
+        band: '&',
+        bor: '|',
+        bxor: '^',
+        lshift: '<<',
+        rshift: '>>',
+        rrshift: '>>>'
+};
+numeric.opseq = {
+        addeq: '+=',
+        subeq: '-=',
+        muleq: '*=',
+        diveq: '/=',
+        modeq: '%=',
+        lshifteq: '<<=',
+        rshifteq: '>>=',
+        rrshifteq: '>>>=',
+        bandeq: '&=',
+        boreq: '|=',
+        bxoreq: '^='
+};
+numeric.mathfuns = ['abs','acos','asin','atan','ceil','cos',
+                    'exp','floor','log','round','sin','sqrt','tan',
+                    'isNaN','isFinite'];
+numeric.mathfuns2 = ['atan2','pow','max','min'];
+numeric.ops1 = {
+        neg: '-',
+        not: '!',
+        bnot: '~',
+        clone: ''
+};
+
+numeric.map = function(A, f){
+
+    // var mapFunc = function(X){
+    //     if(Array.isArray(X)){
+    //         return X.map(mapFunc)
+    //     }else{
+    //         return f(X);
+    //     }
+    // }
+
+    return A.map(f);
+}
+numeric.mapreducers = {
+        any: ['if(xi) return true;','var accum = false;'],
+        all: ['if(!xi) return false;','var accum = true;'],
+        sum: ['accum += xi;','var accum = 0;'],
+        prod: ['accum *= xi;','var accum = 1;'],
+        norm2Squared: ['accum += xi*xi;','var accum = 0;'],
+        norminf: ['accum = max(accum,abs(xi));','var accum = 0, max = Math.max, abs = Math.abs;'],
+        norm1: ['accum += abs(xi)','var accum = 0, abs = Math.abs;'],
