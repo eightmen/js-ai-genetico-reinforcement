@@ -928,3 +928,83 @@ numeric._random = function _random(s,k) {
     }
     for(i=n-1;i>=0;i--) ret[i] = _random(s,k+1);
     return ret;
+}
+numeric.random = function random(s) { return numeric._random(s,0); }
+
+numeric.norm2 = function norm2(x) { return Math.sqrt(numeric.norm2Squared(x)); }
+
+numeric.linspace = function linspace(a,b,n) {
+    if(typeof n === "undefined") n = Math.max(Math.round(b-a)+1,1);
+    if(n<2) { return n===1?[a]:[]; }
+    var i,ret = Array(n);
+    n--;
+    for(i=n;i>=0;i--) { ret[i] = (i*b+(n-i)*a)/n; }
+    return ret;
+}
+
+numeric.getBlock = function getBlock(x,from,to) {
+    var s = numeric.dim(x);
+    function foo(x,k) {
+        var i,a = from[k], n = to[k]-a, ret = Array(n);
+        if(k === s.length-1) {
+            for(i=n;i>=0;i--) { ret[i] = x[i+a]; }
+            return ret;
+        }
+        for(i=n;i>=0;i--) { ret[i] = foo(x[i+a],k+1); }
+        return ret;
+    }
+    return foo(x,0);
+}
+
+numeric.setBlock = function setBlock(x,from,to,B) {
+    var s = numeric.dim(x);
+    function foo(x,y,k) {
+        var i,a = from[k], n = to[k]-a;
+        if(k === s.length-1) { for(i=n;i>=0;i--) { x[i+a] = y[i]; } }
+        for(i=n;i>=0;i--) { foo(x[i+a],y[i],k+1); }
+    }
+    foo(x,B,0);
+    return x;
+}
+
+numeric.getRange = function getRange(A,I,J) {
+    var m = I.length, n = J.length;
+    var i,j;
+    var B = Array(m), Bi, AI;
+    for(i=m-1;i!==-1;--i) {
+        B[i] = Array(n);
+        Bi = B[i];
+        AI = A[I[i]];
+        for(j=n-1;j!==-1;--j) Bi[j] = AI[J[j]];
+    }
+    return B;
+}
+
+numeric.blockMatrix = function blockMatrix(X) {
+    var s = numeric.dim(X);
+    if(s.length<4) return numeric.blockMatrix([X]);
+    var m=s[0],n=s[1],M,N,i,j,Xij;
+    M = 0; N = 0;
+    for(i=0;i<m;++i) M+=X[i][0].length;
+    for(j=0;j<n;++j) N+=X[0][j][0].length;
+    var Z = Array(M);
+    for(i=0;i<M;++i) Z[i] = Array(N);
+    var I=0,J,ZI,k,l,Xijk;
+    for(i=0;i<m;++i) {
+        J=N;
+        for(j=n-1;j!==-1;--j) {
+            Xij = X[i][j];
+            J -= Xij[0].length;
+            for(k=Xij.length-1;k!==-1;--k) {
+                Xijk = Xij[k];
+                ZI = Z[I+k];
+                for(l = Xijk.length-1;l!==-1;--l) ZI[J+l] = Xijk[l];
+            }
+        }
+        I += X[i][0].length;
+    }
+    return Z;
+}
+
+numeric.tensor = function tensor(x,y) {
+    if(typeof x === "number" || typeof y === "number") return numeric.mul(x,y);
