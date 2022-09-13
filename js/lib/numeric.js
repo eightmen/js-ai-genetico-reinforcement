@@ -846,3 +846,85 @@ numeric.det = function det(x) {
             ret *= -1;
         }
         Aj = A[j];
+        for(i=j+1;i<n;i++) {
+            Ai = A[i];
+            alpha = Ai[j]/Aj[j];
+            for(k=j+1;k<n-1;k+=2) {
+                k1 = k+1;
+                Ai[k] -= Aj[k]*alpha;
+                Ai[k1] -= Aj[k1]*alpha;
+            }
+            if(k!==n) { Ai[k] -= Aj[k]*alpha; }
+        }
+        if(Aj[j] === 0) { return 0; }
+        ret *= Aj[j];
+    }
+    return ret*A[j][j];
+}
+
+numeric.transpose = function transpose(x) {
+    var i,j,m = x.length,n = x[0].length, ret=Array(n),A0,A1,Bj;
+    for(j=0;j<n;j++) ret[j] = Array(m);
+    for(i=m-1;i>=1;i-=2) {
+        A1 = x[i];
+        A0 = x[i-1];
+        for(j=n-1;j>=1;--j) {
+            Bj = ret[j]; Bj[i] = A1[j]; Bj[i-1] = A0[j];
+            --j;
+            Bj = ret[j]; Bj[i] = A1[j]; Bj[i-1] = A0[j];
+        }
+        if(j===0) {
+            Bj = ret[0]; Bj[i] = A1[0]; Bj[i-1] = A0[0];
+        }
+    }
+    if(i===0) {
+        A0 = x[0];
+        for(j=n-1;j>=1;--j) {
+            ret[j][0] = A0[j];
+            --j;
+            ret[j][0] = A0[j];
+        }
+        if(j===0) { ret[0][0] = A0[0]; }
+    }
+    return ret;
+}
+numeric.negtranspose = function negtranspose(x) {
+    var i,j,m = x.length,n = x[0].length, ret=Array(n),A0,A1,Bj;
+    for(j=0;j<n;j++) ret[j] = Array(m);
+    for(i=m-1;i>=1;i-=2) {
+        A1 = x[i];
+        A0 = x[i-1];
+        for(j=n-1;j>=1;--j) {
+            Bj = ret[j]; Bj[i] = -A1[j]; Bj[i-1] = -A0[j];
+            --j;
+            Bj = ret[j]; Bj[i] = -A1[j]; Bj[i-1] = -A0[j];
+        }
+        if(j===0) {
+            Bj = ret[0]; Bj[i] = -A1[0]; Bj[i-1] = -A0[0];
+        }
+    }
+    if(i===0) {
+        A0 = x[0];
+        for(j=n-1;j>=1;--j) {
+            ret[j][0] = -A0[j];
+            --j;
+            ret[j][0] = -A0[j];
+        }
+        if(j===0) { ret[0][0] = -A0[0]; }
+    }
+    return ret;
+}
+
+numeric._random = function _random(s,k) {
+    var i,n=s[k],ret=Array(n), rnd;
+    if(k === s.length-1) {
+        rnd = Math.random;
+        for(i=n-1;i>=1;i-=2) {
+            ret[i] = rnd();
+            ret[i-1] = rnd();
+        }
+        if(i===0) { ret[0] = rnd(); }
+        return ret;
+    }
+    for(i=n-1;i>=0;i--) ret[i] = _random(s,k+1);
+    return ret;
