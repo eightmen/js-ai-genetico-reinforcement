@@ -1008,3 +1008,87 @@ numeric.blockMatrix = function blockMatrix(X) {
 
 numeric.tensor = function tensor(x,y) {
     if(typeof x === "number" || typeof y === "number") return numeric.mul(x,y);
+    var s1 = numeric.dim(x), s2 = numeric.dim(y);
+    if(s1.length !== 1 || s2.length !== 1) {
+        throw new Error('numeric: tensor product is only defined for vectors');
+    }
+    var m = s1[0], n = s2[0], A = Array(m), Ai, i,j,xi;
+    for(i=m-1;i>=0;i--) {
+        Ai = Array(n);
+        xi = x[i];
+        for(j=n-1;j>=3;--j) {
+            Ai[j] = xi * y[j];
+            --j;
+            Ai[j] = xi * y[j];
+            --j;
+            Ai[j] = xi * y[j];
+            --j;
+            Ai[j] = xi * y[j];
+        }
+        while(j>=0) { Ai[j] = xi * y[j]; --j; }
+        A[i] = Ai;
+    }
+    return A;
+}
+
+// 3. The Tensor type T
+numeric.T = function T(x,y) { this.x = x; this.y = y; }
+numeric.t = function t(x,y) { return new numeric.T(x,y); }
+
+numeric.Tbinop = function Tbinop(rr,rc,cr,cc,setup) {
+    var io = numeric.indexOf;
+    if(typeof setup !== "string") {
+        var k;
+        setup = '';
+        for(k in numeric) {
+            if(numeric.hasOwnProperty(k) && (rr.indexOf(k)>=0 || rc.indexOf(k)>=0 || cr.indexOf(k)>=0 || cc.indexOf(k)>=0) && k.length>1) {
+                setup += 'var '+k+' = numeric.'+k+';\n';
+            }
+        }
+    }
+    return Function(['y'],
+            'var x = this;\n'+
+            'if(!(y instanceof numeric.T)) { y = new numeric.T(y); }\n'+
+            setup+'\n'+
+            'if(x.y) {'+
+            '  if(y.y) {'+
+            '    return new numeric.T('+cc+');\n'+
+            '  }\n'+
+            '  return new numeric.T('+cr+');\n'+
+            '}\n'+
+            'if(y.y) {\n'+
+            '  return new numeric.T('+rc+');\n'+
+            '}\n'+
+            'return new numeric.T('+rr+');\n'
+    );
+}
+
+numeric.T.prototype.add = numeric.Tbinop(
+        'add(x.x,y.x)',
+        'add(x.x,y.x),y.y',
+        'add(x.x,y.x),x.y',
+        'add(x.x,y.x),add(x.y,y.y)');
+numeric.T.prototype.sub = numeric.Tbinop(
+        'sub(x.x,y.x)',
+        'sub(x.x,y.x),neg(y.y)',
+        'sub(x.x,y.x),x.y',
+        'sub(x.x,y.x),sub(x.y,y.y)');
+numeric.T.prototype.mul = numeric.Tbinop(
+        'mul(x.x,y.x)',
+        'mul(x.x,y.x),mul(x.x,y.y)',
+        'mul(x.x,y.x),mul(x.y,y.x)',
+        'sub(mul(x.x,y.x),mul(x.y,y.y)),add(mul(x.x,y.y),mul(x.y,y.x))');
+
+numeric.T.prototype.reciprocal = function reciprocal() {
+    var mul = numeric.mul, div = numeric.div;
+    if(this.y) {
+        var d = numeric.add(mul(this.x,this.x),mul(this.y,this.y));
+        return new numeric.T(div(this.x,d),div(numeric.neg(this.y),d));
+    }
+    return new T(div(1,this.x));
+}
+numeric.T.prototype.div = function div(y) {
+    if(!(y instanceof numeric.T)) y = new numeric.T(y);
+    if(y.y) { return this.mul(y.reciprocal()); }
+    var div = numeric.div;
+    if(this.y) { return new numeric.T(div(this.x,y.x),div(this.y,y.x)); }
