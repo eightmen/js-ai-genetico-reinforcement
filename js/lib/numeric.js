@@ -1166,3 +1166,99 @@ numeric.T.prototype.inv = function inv() {
         for(j=i+1;j<n;j++) {
             ax = Ax[j][i]; ay = Ay[j][i];
             d1 = ax*ax+ay*ay;
+            if(d1 > d) { k=j; d = d1; }
+        }
+        if(k!==i) {
+            temp = Ax[i]; Ax[i] = Ax[k]; Ax[k] = temp;
+            temp = Ay[i]; Ay[i] = Ay[k]; Ay[k] = temp;
+            temp = Rx[i]; Rx[i] = Rx[k]; Rx[k] = temp;
+            temp = Ry[i]; Ry[i] = Ry[k]; Ry[k] = temp;
+        }
+        Aix = Ax[i]; Aiy = Ay[i];
+        Rix = Rx[i]; Riy = Ry[i];
+        ax = Aix[i]; ay = Aiy[i];
+        for(j=i+1;j<n;j++) {
+            bx = Aix[j]; by = Aiy[j];
+            Aix[j] = (bx*ax+by*ay)/d;
+            Aiy[j] = (by*ax-bx*ay)/d;
+        }
+        for(j=0;j<n;j++) {
+            bx = Rix[j]; by = Riy[j];
+            Rix[j] = (bx*ax+by*ay)/d;
+            Riy[j] = (by*ax-bx*ay)/d;
+        }
+        for(j=i+1;j<n;j++) {
+            Ajx = Ax[j]; Ajy = Ay[j];
+            Rjx = Rx[j]; Rjy = Ry[j];
+            ax = Ajx[i]; ay = Ajy[i];
+            for(k=i+1;k<n;k++) {
+                bx = Aix[k]; by = Aiy[k];
+                Ajx[k] -= bx*ax-by*ay;
+                Ajy[k] -= by*ax+bx*ay;
+            }
+            for(k=0;k<n;k++) {
+                bx = Rix[k]; by = Riy[k];
+                Rjx[k] -= bx*ax-by*ay;
+                Rjy[k] -= by*ax+bx*ay;
+            }
+        }
+    }
+    for(i=n-1;i>0;i--) {
+        Rix = Rx[i]; Riy = Ry[i];
+        for(j=i-1;j>=0;j--) {
+            Rjx = Rx[j]; Rjy = Ry[j];
+            ax = Ax[j][i]; ay = Ay[j][i];
+            for(k=n-1;k>=0;k--) {
+                bx = Rix[k]; by = Riy[k];
+                Rjx[k] -= ax*bx - ay*by;
+                Rjy[k] -= ax*by + ay*bx;
+            }
+        }
+    }
+    return new numeric.T(Rx,Ry);
+}
+numeric.T.prototype.get = function get(i) {
+    var x = this.x, y = this.y, k = 0, ik, n = i.length;
+    if(y) {
+        while(k<n) {
+            ik = i[k];
+            x = x[ik];
+            y = y[ik];
+            k++;
+        }
+        return new numeric.T(x,y);
+    }
+    while(k<n) {
+        ik = i[k];
+        x = x[ik];
+        k++;
+    }
+    return new numeric.T(x);
+}
+numeric.T.prototype.set = function set(i,v) {
+    var x = this.x, y = this.y, k = 0, ik, n = i.length, vx = v.x, vy = v.y;
+    if(n===0) {
+        if(vy) { this.y = vy; }
+        else if(y) { this.y = undefined; }
+        this.x = x;
+        return this;
+    }
+    if(vy) {
+        if(y) { /* ok */ }
+        else {
+            y = numeric.rep(numeric.dim(x),0);
+            this.y = y;
+        }
+        while(k<n-1) {
+            ik = i[k];
+            x = x[ik];
+            y = y[ik];
+            k++;
+        }
+        ik = i[k];
+        x[ik] = vx;
+        y[ik] = vy;
+        return this;
+    }
+    if(y) {
+        while(k<n-1) {
