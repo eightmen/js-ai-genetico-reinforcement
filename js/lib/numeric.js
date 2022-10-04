@@ -1092,3 +1092,77 @@ numeric.T.prototype.div = function div(y) {
     if(y.y) { return this.mul(y.reciprocal()); }
     var div = numeric.div;
     if(this.y) { return new numeric.T(div(this.x,y.x),div(this.y,y.x)); }
+    return new numeric.T(div(this.x,y.x));
+}
+numeric.T.prototype.dot = numeric.Tbinop(
+        'dot(x.x,y.x)',
+        'dot(x.x,y.x),dot(x.x,y.y)',
+        'dot(x.x,y.x),dot(x.y,y.x)',
+        'sub(dot(x.x,y.x),dot(x.y,y.y)),add(dot(x.x,y.y),dot(x.y,y.x))'
+        );
+numeric.T.prototype.transpose = function transpose() {
+    var t = numeric.transpose, x = this.x, y = this.y;
+    if(y) { return new numeric.T(t(x),t(y)); }
+    return new numeric.T(t(x));
+}
+numeric.T.prototype.transjugate = function transjugate() {
+    var t = numeric.transpose, x = this.x, y = this.y;
+    if(y) { return new numeric.T(t(x),numeric.negtranspose(y)); }
+    return new numeric.T(t(x));
+}
+numeric.Tunop = function Tunop(r,c,s) {
+    if(typeof s !== "string") { s = ''; }
+    return Function(
+            'var x = this;\n'+
+            s+'\n'+
+            'if(x.y) {'+
+            '  '+c+';\n'+
+            '}\n'+
+            r+';\n'
+    );
+}
+
+numeric.T.prototype.exp = numeric.Tunop(
+        'return new numeric.T(ex)',
+        'return new numeric.T(mul(cos(x.y),ex),mul(sin(x.y),ex))',
+        'var ex = numeric.exp(x.x), cos = numeric.cos, sin = numeric.sin, mul = numeric.mul;');
+numeric.T.prototype.conj = numeric.Tunop(
+        'return new numeric.T(x.x);',
+        'return new numeric.T(x.x,numeric.neg(x.y));');
+numeric.T.prototype.neg = numeric.Tunop(
+        'return new numeric.T(neg(x.x));',
+        'return new numeric.T(neg(x.x),neg(x.y));',
+        'var neg = numeric.neg;');
+numeric.T.prototype.sin = numeric.Tunop(
+        'return new numeric.T(numeric.sin(x.x))',
+        'return x.exp().sub(x.neg().exp()).div(new numeric.T(0,2));');
+numeric.T.prototype.cos = numeric.Tunop(
+        'return new numeric.T(numeric.cos(x.x))',
+        'return x.exp().add(x.neg().exp()).div(2);');
+numeric.T.prototype.abs = numeric.Tunop(
+        'return new numeric.T(numeric.abs(x.x));',
+        'return new numeric.T(numeric.sqrt(numeric.add(mul(x.x,x.x),mul(x.y,x.y))));',
+        'var mul = numeric.mul;');
+numeric.T.prototype.log = numeric.Tunop(
+        'return new numeric.T(numeric.log(x.x));',
+        'var theta = new numeric.T(numeric.atan2(x.y,x.x)), r = x.abs();\n'+
+        'return new numeric.T(numeric.log(r.x),theta.x);');
+numeric.T.prototype.norm2 = numeric.Tunop(
+        'return numeric.norm2(x.x);',
+        'var f = numeric.norm2Squared;\n'+
+        'return Math.sqrt(f(x.x)+f(x.y));');
+numeric.T.prototype.inv = function inv() {
+    var A = this;
+    if(typeof A.y === "undefined") { return new numeric.T(numeric.inv(A.x)); }
+    var n = A.x.length, i, j, k;
+    var Rx = numeric.identity(n),Ry = numeric.rep([n,n],0);
+    var Ax = numeric.clone(A.x), Ay = numeric.clone(A.y);
+    var Aix, Aiy, Ajx, Ajy, Rix, Riy, Rjx, Rjy;
+    var i,j,k,d,d1,ax,ay,bx,by,temp;
+    for(i=0;i<n;i++) {
+        ax = Ax[i][i]; ay = Ay[i][i];
+        d = ax*ax+ay*ay;
+        k = i;
+        for(j=i+1;j<n;j++) {
+            ax = Ax[j][i]; ay = Ay[j][i];
+            d1 = ax*ax+ay*ay;
