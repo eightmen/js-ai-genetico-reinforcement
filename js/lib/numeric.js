@@ -1433,3 +1433,92 @@ numeric.QRFrancis = function(H,maxiter) {
         if(tr*tr>=4*det) {
             var s1,s2;
             s1 = 0.5*(tr+Math.sqrt(tr*tr-4*det));
+            s2 = 0.5*(tr-Math.sqrt(tr*tr-4*det));
+            Hloc = numeric.add(numeric.sub(numeric.dot(Hloc,Hloc),
+                                           numeric.mul(Hloc,s1+s2)),
+                               numeric.diag(numeric.rep([3],s1*s2)));
+        } else {
+            Hloc = numeric.add(numeric.sub(numeric.dot(Hloc,Hloc),
+                                           numeric.mul(Hloc,tr)),
+                               numeric.diag(numeric.rep([3],det)));
+        }
+        x = [Hloc[0][0],Hloc[1][0],Hloc[2][0]];
+        v = numeric.house(x);
+        B = [H[0],H[1],H[2]];
+        C = numeric.tensor(v,numeric.dot(v,B));
+        for(i=0;i<3;i++) { Hi = H[i]; Ci = C[i]; for(k=0;k<m;k++) Hi[k] -= 2*Ci[k]; }
+        B = numeric.getBlock(H, [0,0],[m-1,2]);
+        C = numeric.tensor(numeric.dot(B,v),v);
+        for(i=0;i<m;i++) { Hi = H[i]; Ci = C[i]; for(k=0;k<3;k++) Hi[k] -= 2*Ci[k]; }
+        B = [Q[0],Q[1],Q[2]];
+        C = numeric.tensor(v,numeric.dot(v,B));
+        for(i=0;i<3;i++) { Qi = Q[i]; Ci = C[i]; for(k=0;k<m;k++) Qi[k] -= 2*Ci[k]; }
+        var J;
+        for(j=0;j<m-2;j++) {
+            for(k=j;k<=j+1;k++) {
+                if(Math.abs(H[k+1][k]) < epsilon*(Math.abs(H[k][k])+Math.abs(H[k+1][k+1]))) {
+                    var QH1 = numeric.QRFrancis(numeric.getBlock(H,[0,0],[k,k]),maxiter);
+                    var QH2 = numeric.QRFrancis(numeric.getBlock(H,[k+1,k+1],[m-1,m-1]),maxiter);
+                    B = Array(k+1);
+                    for(i=0;i<=k;i++) { B[i] = Q[i]; }
+                    C = numeric.dot(QH1.Q,B);
+                    for(i=0;i<=k;i++) { Q[i] = C[i]; }
+                    B = Array(m-k-1);
+                    for(i=k+1;i<m;i++) { B[i-k-1] = Q[i]; }
+                    C = numeric.dot(QH2.Q,B);
+                    for(i=k+1;i<m;i++) { Q[i] = C[i-k-1]; }
+                    return {Q:Q,B:QH1.B.concat(numeric.add(QH2.B,k+1))};
+                }
+            }
+            J = Math.min(m-1,j+3);
+            x = Array(J-j);
+            for(i=j+1;i<=J;i++) { x[i-j-1] = H[i][j]; }
+            v = numeric.house(x);
+            B = numeric.getBlock(H, [j+1,j],[J,m-1]);
+            C = numeric.tensor(v,numeric.dot(v,B));
+            for(i=j+1;i<=J;i++) { Hi = H[i]; Ci = C[i-j-1]; for(k=j;k<m;k++) Hi[k] -= 2*Ci[k-j]; }
+            B = numeric.getBlock(H, [0,j+1],[m-1,J]);
+            C = numeric.tensor(numeric.dot(B,v),v);
+            for(i=0;i<m;i++) { Hi = H[i]; Ci = C[i]; for(k=j+1;k<=J;k++) Hi[k] -= 2*Ci[k-j-1]; }
+            B = Array(J-j);
+            for(i=j+1;i<=J;i++) B[i-j-1] = Q[i];
+            C = numeric.tensor(v,numeric.dot(v,B));
+            for(i=j+1;i<=J;i++) { Qi = Q[i]; Ci = C[i-j-1]; for(k=0;k<m;k++) Qi[k] -= 2*Ci[k]; }
+        }
+    }
+    throw new Error('numeric: eigenvalue iteration does not converge -- increase maxiter?');
+}
+
+numeric.eig = function eig(A,maxiter) {
+    var QH = numeric.toUpperHessenberg(A);
+    var QB = numeric.QRFrancis(QH.H,maxiter);
+    var T = numeric.T;
+    var n = A.length,i,k,flag = false,B = QB.B,H = numeric.dot(QB.Q,numeric.dot(QH.H,numeric.transpose(QB.Q)));
+    var Q = new T(numeric.dot(QB.Q,QH.Q)),Q0;
+    var m = B.length,j;
+    var a,b,c,d,p1,p2,disc,x,y,p,q,n1,n2;
+    var sqrt = Math.sqrt;
+    for(k=0;k<m;k++) {
+        i = B[k][0];
+        if(i === B[k][1]) {
+            // nothing
+        } else {
+            j = i+1;
+            a = H[i][i];
+            b = H[i][j];
+            c = H[j][i];
+            d = H[j][j];
+            if(b === 0 && c === 0) continue;
+            p1 = -a-d;
+            p2 = a*d-b*c;
+            disc = p1*p1-4*p2;
+            if(disc>=0) {
+                if(p1<0) x = -0.5*(p1-sqrt(disc));
+                else     x = -0.5*(p1+sqrt(disc));
+                n1 = (a-x)*(a-x)+b*b;
+                n2 = c*c+(d-x)*(d-x);
+                if(n1>n2) {
+                    n1 = sqrt(n1);
+                    p = (a-x)/n1;
+                    q = b/n1;
+                } else {
