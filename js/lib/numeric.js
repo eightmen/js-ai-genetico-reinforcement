@@ -1343,3 +1343,93 @@ numeric.T.rep = function rep(s,v) {
     var T = numeric.T;
     if(!(v instanceof T)) v = new T(v);
     var x = v.x, y = v.y, r = numeric.rep;
+    if(y) return new T(r(s,x),r(s,y));
+    return new T(r(s,x));
+}
+numeric.T.diag = function diag(d) {
+    if(!(d instanceof numeric.T)) d = new numeric.T(d);
+    var x = d.x, y = d.y, diag = numeric.diag;
+    if(y) return new numeric.T(diag(x),diag(y));
+    return new numeric.T(diag(x));
+}
+numeric.T.eig = function eig() {
+    if(this.y) { throw new Error('eig: not implemented for complex matrices.'); }
+    return numeric.eig(this.x);
+}
+numeric.T.identity = function identity(n) { return new numeric.T(numeric.identity(n)); }
+numeric.T.prototype.getDiag = function getDiag() {
+    var n = numeric;
+    var x = this.x, y = this.y;
+    if(y) { return new n.T(n.getDiag(x),n.getDiag(y)); }
+    return new n.T(n.getDiag(x));
+}
+
+// 4. Eigenvalues of real matrices
+
+numeric.house = function house(x) {
+    var v = numeric.clone(x);
+    var s = x[0] >= 0 ? 1 : -1;
+    var alpha = s*numeric.norm2(x);
+    v[0] += alpha;
+    var foo = numeric.norm2(v);
+    if(foo === 0) { /* this should not happen */ throw new Error('eig: internal error'); }
+    return numeric.div(v,foo);
+}
+
+numeric.toUpperHessenberg = function toUpperHessenberg(me) {
+    var s = numeric.dim(me);
+    if(s.length !== 2 || s[0] !== s[1]) { throw new Error('numeric: toUpperHessenberg() only works on square matrices'); }
+    var m = s[0], i,j,k,x,v,A = numeric.clone(me),B,C,Ai,Ci,Q = numeric.identity(m),Qi;
+    for(j=0;j<m-2;j++) {
+        x = Array(m-j-1);
+        for(i=j+1;i<m;i++) { x[i-j-1] = A[i][j]; }
+        if(numeric.norm2(x)>0) {
+            v = numeric.house(x);
+            B = numeric.getBlock(A,[j+1,j],[m-1,m-1]);
+            C = numeric.tensor(v,numeric.dot(v,B));
+            for(i=j+1;i<m;i++) { Ai = A[i]; Ci = C[i-j-1]; for(k=j;k<m;k++) Ai[k] -= 2*Ci[k-j]; }
+            B = numeric.getBlock(A,[0,j+1],[m-1,m-1]);
+            C = numeric.tensor(numeric.dot(B,v),v);
+            for(i=0;i<m;i++) { Ai = A[i]; Ci = C[i]; for(k=j+1;k<m;k++) Ai[k] -= 2*Ci[k-j-1]; }
+            B = Array(m-j-1);
+            for(i=j+1;i<m;i++) B[i-j-1] = Q[i];
+            C = numeric.tensor(v,numeric.dot(v,B));
+            for(i=j+1;i<m;i++) { Qi = Q[i]; Ci = C[i-j-1]; for(k=0;k<m;k++) Qi[k] -= 2*Ci[k]; }
+        }
+    }
+    return {H:A, Q:Q};
+}
+
+numeric.epsilon = 2.220446049250313e-16;
+
+numeric.QRFrancis = function(H,maxiter) {
+    if(typeof maxiter === "undefined") { maxiter = 10000; }
+    H = numeric.clone(H);
+    var H0 = numeric.clone(H);
+    var s = numeric.dim(H),m=s[0],x,v,a,b,c,d,det,tr, Hloc, Q = numeric.identity(m), Qi, Hi, B, C, Ci,i,j,k,iter;
+    if(m<3) { return {Q:Q, B:[ [0,m-1] ]}; }
+    var epsilon = numeric.epsilon;
+    for(iter=0;iter<maxiter;iter++) {
+        for(j=0;j<m-1;j++) {
+            if(Math.abs(H[j+1][j]) < epsilon*(Math.abs(H[j][j])+Math.abs(H[j+1][j+1]))) {
+                var QH1 = numeric.QRFrancis(numeric.getBlock(H,[0,0],[j,j]),maxiter);
+                var QH2 = numeric.QRFrancis(numeric.getBlock(H,[j+1,j+1],[m-1,m-1]),maxiter);
+                B = Array(j+1);
+                for(i=0;i<=j;i++) { B[i] = Q[i]; }
+                C = numeric.dot(QH1.Q,B);
+                for(i=0;i<=j;i++) { Q[i] = C[i]; }
+                B = Array(m-j-1);
+                for(i=j+1;i<m;i++) { B[i-j-1] = Q[i]; }
+                C = numeric.dot(QH2.Q,B);
+                for(i=j+1;i<m;i++) { Q[i] = C[i-j-1]; }
+                return {Q:Q,B:QH1.B.concat(numeric.add(QH2.B,j+1))};
+            }
+        }
+        a = H[m-2][m-2]; b = H[m-2][m-1];
+        c = H[m-1][m-2]; d = H[m-1][m-1];
+        tr = a+d;
+        det = (a*d-b*c);
+        Hloc = numeric.getBlock(H, [0,0], [2,2]);
+        if(tr*tr>=4*det) {
+            var s1,s2;
+            s1 = 0.5*(tr+Math.sqrt(tr*tr-4*det));
