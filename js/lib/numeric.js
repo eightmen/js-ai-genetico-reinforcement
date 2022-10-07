@@ -1601,3 +1601,105 @@ numeric.ccsSparse = function ccsSparse(A) {
                 Av[Ai[j]+counts[j]] = foo[j];
             }
         }
+    }
+    return [Ai,Aj,Av];
+}
+numeric.ccsFull = function ccsFull(A) {
+    var Ai = A[0], Aj = A[1], Av = A[2], s = numeric.ccsDim(A), m = s[0], n = s[1], i,j,j0,j1,k;
+    var B = numeric.rep([m,n],0);
+    for(i=0;i<n;i++) {
+        j0 = Ai[i];
+        j1 = Ai[i+1];
+        for(j=j0;j<j1;++j) { B[Aj[j]][i] = Av[j]; }
+    }
+    return B;
+}
+numeric.ccsTSolve = function ccsTSolve(A,b,x,bj,xj) {
+    var Ai = A[0], Aj = A[1], Av = A[2],m = Ai.length-1, max = Math.max,n=0;
+    if(typeof bj === "undefined") x = numeric.rep([m],0);
+    if(typeof bj === "undefined") bj = numeric.linspace(0,x.length-1);
+    if(typeof xj === "undefined") xj = [];
+    function dfs(j) {
+        var k;
+        if(x[j] !== 0) return;
+        x[j] = 1;
+        for(k=Ai[j];k<Ai[j+1];++k) dfs(Aj[k]);
+        xj[n] = j;
+        ++n;
+    }
+    var i,j,j0,j1,k,l,l0,l1,a;
+    for(i=bj.length-1;i!==-1;--i) { dfs(bj[i]); }
+    xj.length = n;
+    for(i=xj.length-1;i!==-1;--i) { x[xj[i]] = 0; }
+    for(i=bj.length-1;i!==-1;--i) { j = bj[i]; x[j] = b[j]; }
+    for(i=xj.length-1;i!==-1;--i) {
+        j = xj[i];
+        j0 = Ai[j];
+        j1 = max(Ai[j+1],j0);
+        for(k=j0;k!==j1;++k) { if(Aj[k] === j) { x[j] /= Av[k]; break; } }
+        a = x[j];
+        for(k=j0;k!==j1;++k) {
+            l = Aj[k];
+            if(l !== j) x[l] -= a*Av[k];
+        }
+    }
+    return x;
+}
+numeric.ccsDFS = function ccsDFS(n) {
+    this.k = Array(n);
+    this.k1 = Array(n);
+    this.j = Array(n);
+}
+numeric.ccsDFS.prototype.dfs = function dfs(J,Ai,Aj,x,xj,Pinv) {
+    var m = 0,foo,n=xj.length;
+    var k = this.k, k1 = this.k1, j = this.j,km,k11;
+    if(x[J]!==0) return;
+    x[J] = 1;
+    j[0] = J;
+    k[0] = km = Ai[J];
+    k1[0] = k11 = Ai[J+1];
+    while(1) {
+        if(km >= k11) {
+            xj[n] = j[m];
+            if(m===0) return;
+            ++n;
+            --m;
+            km = k[m];
+            k11 = k1[m];
+        } else {
+            foo = Pinv[Aj[km]];
+            if(x[foo] === 0) {
+                x[foo] = 1;
+                k[m] = km;
+                ++m;
+                j[m] = foo;
+                km = Ai[foo];
+                k1[m] = k11 = Ai[foo+1];
+            } else ++km;
+        }
+    }
+}
+numeric.ccsLPSolve = function ccsLPSolve(A,B,x,xj,I,Pinv,dfs) {
+    var Ai = A[0], Aj = A[1], Av = A[2],m = Ai.length-1, n=0;
+    var Bi = B[0], Bj = B[1], Bv = B[2];
+    
+    var i,i0,i1,j,J,j0,j1,k,l,l0,l1,a;
+    i0 = Bi[I];
+    i1 = Bi[I+1];
+    xj.length = 0;
+    for(i=i0;i<i1;++i) { dfs.dfs(Pinv[Bj[i]],Ai,Aj,x,xj,Pinv); }
+    for(i=xj.length-1;i!==-1;--i) { x[xj[i]] = 0; }
+    for(i=i0;i!==i1;++i) { j = Pinv[Bj[i]]; x[j] = Bv[i]; }
+    for(i=xj.length-1;i!==-1;--i) {
+        j = xj[i];
+        j0 = Ai[j];
+        j1 = Ai[j+1];
+        for(k=j0;k<j1;++k) { if(Pinv[Aj[k]] === j) { x[j] /= Av[k]; break; } }
+        a = x[j];
+        for(k=j0;k<j1;++k) {
+            l = Pinv[Aj[k]];
+            if(l !== j) x[l] -= a*Av[k];
+        }
+    }
+    return x;
+}
