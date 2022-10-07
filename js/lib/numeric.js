@@ -1788,3 +1788,83 @@ numeric.ccsDFS0.prototype.dfs = function dfs(J,Ai,Aj,x,xj,Pinv,P) {
 }
 numeric.ccsLPSolve0 = function ccsLPSolve0(A,B,y,xj,I,Pinv,P,dfs) {
     var Ai = A[0], Aj = A[1], Av = A[2],m = Ai.length-1, n=0;
+    var Bi = B[0], Bj = B[1], Bv = B[2];
+    
+    var i,i0,i1,j,J,j0,j1,k,l,l0,l1,a;
+    i0 = Bi[I];
+    i1 = Bi[I+1];
+    xj.length = 0;
+    for(i=i0;i<i1;++i) { dfs.dfs(Bj[i],Ai,Aj,y,xj,Pinv,P); }
+    for(i=xj.length-1;i!==-1;--i) { j = xj[i]; y[P[j]] = 0; }
+    for(i=i0;i!==i1;++i) { j = Bj[i]; y[j] = Bv[i]; }
+    for(i=xj.length-1;i!==-1;--i) {
+        j = xj[i];
+        l = P[j];
+        j0 = Ai[j];
+        j1 = Ai[j+1];
+        for(k=j0;k<j1;++k) { if(Aj[k] === l) { y[l] /= Av[k]; break; } }
+        a = y[l];
+        for(k=j0;k<j1;++k) y[Aj[k]] -= a*Av[k];
+        y[l] = a;
+    }
+}
+numeric.ccsLUP0 = function ccsLUP0(A,threshold) {
+    var m = A[0].length-1;
+    var L = [numeric.rep([m+1],0),[],[]], U = [numeric.rep([m+1], 0),[],[]];
+    var Li = L[0], Lj = L[1], Lv = L[2], Ui = U[0], Uj = U[1], Uv = U[2];
+    var y = numeric.rep([m],0), xj = numeric.rep([m],0);
+    var i,j,k,j0,j1,a,e,c,d,K;
+    var sol = numeric.ccsLPSolve0, max = Math.max, abs = Math.abs;
+    var P = numeric.linspace(0,m-1),Pinv = numeric.linspace(0,m-1);
+    var dfs = new numeric.ccsDFS0(m);
+    if(typeof threshold === "undefined") { threshold = 1; }
+    for(i=0;i<m;++i) {
+        sol(L,A,y,xj,i,Pinv,P,dfs);
+        a = -1;
+        e = -1;
+        for(j=xj.length-1;j!==-1;--j) {
+            k = xj[j];
+            if(k <= i) continue;
+            c = abs(y[P[k]]);
+            if(c > a) { e = k; a = c; }
+        }
+        if(abs(y[P[i]])<threshold*a) {
+            j = P[i];
+            a = P[e];
+            P[i] = a; Pinv[a] = i;
+            P[e] = j; Pinv[j] = e;
+        }
+        a = Li[i];
+        e = Ui[i];
+        d = y[P[i]];
+        Lj[a] = P[i];
+        Lv[a] = 1;
+        ++a;
+        for(j=xj.length-1;j!==-1;--j) {
+            k = xj[j];
+            c = y[P[k]];
+            xj[j] = 0;
+            y[P[k]] = 0;
+            if(k<=i) { Uj[e] = k; Uv[e] = c;   ++e; }
+            else     { Lj[a] = P[k]; Lv[a] = c/d; ++a; }
+        }
+        Li[i+1] = a;
+        Ui[i+1] = e;
+    }
+    for(j=Lj.length-1;j!==-1;--j) { Lj[j] = Pinv[Lj[j]]; }
+    return {L:L, U:U, P:P, Pinv:Pinv};
+}
+numeric.ccsLUP = numeric.ccsLUP0;
+
+numeric.ccsDim = function ccsDim(A) { return [numeric.sup(A[1])+1,A[0].length-1]; }
+numeric.ccsGetBlock = function ccsGetBlock(A,i,j) {
+    var s = numeric.ccsDim(A),m=s[0],n=s[1];
+    if(typeof i === "undefined") { i = numeric.linspace(0,m-1); }
+    else if(typeof i === "number") { i = [i]; }
+    if(typeof j === "undefined") { j = numeric.linspace(0,n-1); }
+    else if(typeof j === "number") { j = [j]; }
+    var p,p0,p1,P = i.length,q,Q = j.length,r,jq,ip;
+    var Bi = numeric.rep([n],0), Bj=[], Bv=[], B = [Bi,Bj,Bv];
+    var Ai = A[0], Aj = A[1], Av = A[2];
+    var x = numeric.rep([m],0),count=0,flags = numeric.rep([m],0);
+    for(q=0;q<Q;++q) {
