@@ -2041,3 +2041,75 @@ numeric.ccsbinop = function ccsbinop(body,setup) {
                 );
     }
 }());
+
+numeric.ccsScatter = function ccsScatter(A) {
+    var Ai = A[0], Aj = A[1], Av = A[2];
+    var n = numeric.sup(Aj)+1,m=Ai.length;
+    var Ri = numeric.rep([n],0),Rj=Array(m), Rv = Array(m);
+    var counts = numeric.rep([n],0),i;
+    for(i=0;i<m;++i) counts[Aj[i]]++;
+    for(i=0;i<n;++i) Ri[i+1] = Ri[i] + counts[i];
+    var ptr = Ri.slice(0),k,Aii;
+    for(i=0;i<m;++i) {
+        Aii = Aj[i];
+        k = ptr[Aii];
+        Rj[k] = Ai[i];
+        Rv[k] = Av[i];
+        ptr[Aii]=ptr[Aii]+1;
+    }
+    return [Ri,Rj,Rv];
+}
+
+numeric.ccsGather = function ccsGather(A) {
+    var Ai = A[0], Aj = A[1], Av = A[2];
+    var n = Ai.length-1,m = Aj.length;
+    var Ri = Array(m), Rj = Array(m), Rv = Array(m);
+    var i,j,j0,j1,p;
+    p=0;
+    for(i=0;i<n;++i) {
+        j0 = Ai[i];
+        j1 = Ai[i+1];
+        for(j=j0;j!==j1;++j) {
+            Rj[p] = i;
+            Ri[p] = Aj[j];
+            Rv[p] = Av[j];
+            ++p;
+        }
+    }
+    return [Ri,Rj,Rv];
+}
+
+// The following sparse linear algebra routines are deprecated.
+
+numeric.sdim = function dim(A,ret,k) {
+    if(typeof ret === "undefined") { ret = []; }
+    if(typeof A !== "object") return ret;
+    if(typeof k === "undefined") { k=0; }
+    if(!(k in ret)) { ret[k] = 0; }
+    if(A.length > ret[k]) ret[k] = A.length;
+    var i;
+    for(i in A) {
+        if(A.hasOwnProperty(i)) dim(A[i],ret,k+1);
+    }
+    return ret;
+};
+
+numeric.sclone = function clone(A,k,n) {
+    if(typeof k === "undefined") { k=0; }
+    if(typeof n === "undefined") { n = numeric.sdim(A).length; }
+    var i,ret = Array(A.length);
+    if(k === n-1) {
+        for(i in A) { if(A.hasOwnProperty(i)) ret[i] = A[i]; }
+        return ret;
+    }
+    for(i in A) {
+        if(A.hasOwnProperty(i)) ret[i] = clone(A[i],k+1,n);
+    }
+    return ret;
+}
+
+numeric.sdiag = function diag(d) {
+    var n = d.length,i,ret = Array(n),i1,i2,i3;
+    for(i=n-1;i>=1;i-=2) {
+        i1 = i-1;
+        ret[i] = []; ret[i][i] = d[i];
