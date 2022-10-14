@@ -1966,3 +1966,78 @@ numeric.ccsLUPSolve = function ccsLUPSolve(LUP,B) {
         for(j=xj.length-1;j!==-1;--j) x[xj[j]] = 0;
         for(j=bj.length-1;j!==-1;--j) {
             J = bj[j];
+            Xj[N] = J;
+            Xv[N] = b[J];
+            b[J] = 0;
+            ++N;
+        }
+        Xi[i+1] = N;
+    }
+    return [Xi,Xj,Xv];
+}
+
+numeric.ccsbinop = function ccsbinop(body,setup) {
+    if(typeof setup === "undefined") setup='';
+    return Function('X','Y',
+            'var Xi = X[0], Xj = X[1], Xv = X[2];\n'+
+            'var Yi = Y[0], Yj = Y[1], Yv = Y[2];\n'+
+            'var n = Xi.length-1,m = Math.max(numeric.sup(Xj),numeric.sup(Yj))+1;\n'+
+            'var Zi = numeric.rep([n+1],0), Zj = [], Zv = [];\n'+
+            'var x = numeric.rep([m],0),y = numeric.rep([m],0);\n'+
+            'var xk,yk,zk;\n'+
+            'var i,j,j0,j1,k,p=0;\n'+
+            setup+
+            'for(i=0;i<n;++i) {\n'+
+            '  j0 = Xi[i]; j1 = Xi[i+1];\n'+
+            '  for(j=j0;j!==j1;++j) {\n'+
+            '    k = Xj[j];\n'+
+            '    x[k] = 1;\n'+
+            '    Zj[p] = k;\n'+
+            '    ++p;\n'+
+            '  }\n'+
+            '  j0 = Yi[i]; j1 = Yi[i+1];\n'+
+            '  for(j=j0;j!==j1;++j) {\n'+
+            '    k = Yj[j];\n'+
+            '    y[k] = Yv[j];\n'+
+            '    if(x[k] === 0) {\n'+
+            '      Zj[p] = k;\n'+
+            '      ++p;\n'+
+            '    }\n'+
+            '  }\n'+
+            '  Zi[i+1] = p;\n'+
+            '  j0 = Xi[i]; j1 = Xi[i+1];\n'+
+            '  for(j=j0;j!==j1;++j) x[Xj[j]] = Xv[j];\n'+
+            '  j0 = Zi[i]; j1 = Zi[i+1];\n'+
+            '  for(j=j0;j!==j1;++j) {\n'+
+            '    k = Zj[j];\n'+
+            '    xk = x[k];\n'+
+            '    yk = y[k];\n'+
+            body+'\n'+
+            '    Zv[j] = zk;\n'+
+            '  }\n'+
+            '  j0 = Xi[i]; j1 = Xi[i+1];\n'+
+            '  for(j=j0;j!==j1;++j) x[Xj[j]] = 0;\n'+
+            '  j0 = Yi[i]; j1 = Yi[i+1];\n'+
+            '  for(j=j0;j!==j1;++j) y[Yj[j]] = 0;\n'+
+            '}\n'+
+            'return [Zi,Zj,Zv];'
+            );
+};
+
+(function() {
+    var k,A,B,C;
+    for(k in numeric.ops2) {
+        if(isFinite(eval('1'+numeric.ops2[k]+'0'))) A = '[Y[0],Y[1],numeric.'+k+'(X,Y[2])]';
+        else A = 'NaN';
+        if(isFinite(eval('0'+numeric.ops2[k]+'1'))) B = '[X[0],X[1],numeric.'+k+'(X[2],Y)]';
+        else B = 'NaN';
+        if(isFinite(eval('1'+numeric.ops2[k]+'0')) && isFinite(eval('0'+numeric.ops2[k]+'1'))) C = 'numeric.ccs'+k+'MM(X,Y)';
+        else C = 'NaN';
+        numeric['ccs'+k+'MM'] = numeric.ccsbinop('zk = xk '+numeric.ops2[k]+'yk;');
+        numeric['ccs'+k] = Function('X','Y',
+                'if(typeof X === "number") return '+A+';\n'+
+                'if(typeof Y === "number") return '+B+';\n'+
+                'return '+C+';\n'
+                );
+    }
+}());
