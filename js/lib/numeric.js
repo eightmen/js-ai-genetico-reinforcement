@@ -2113,3 +2113,77 @@ numeric.sdiag = function diag(d) {
     for(i=n-1;i>=1;i-=2) {
         i1 = i-1;
         ret[i] = []; ret[i][i] = d[i];
+        ret[i1] = []; ret[i1][i1] = d[i1];
+    }
+    if(i===0) { ret[0] = []; ret[0][0] = d[i]; }
+    return ret;
+}
+
+numeric.sidentity = function identity(n) { return numeric.sdiag(numeric.rep([n],1)); }
+
+numeric.stranspose = function transpose(A) {
+    var ret = [], n = A.length, i,j,Ai;
+    for(i in A) {
+        if(!(A.hasOwnProperty(i))) continue;
+        Ai = A[i];
+        for(j in Ai) {
+            if(!(Ai.hasOwnProperty(j))) continue;
+            if(typeof ret[j] !== "object") { ret[j] = []; }
+            ret[j][i] = Ai[j];
+        }
+    }
+    return ret;
+}
+
+numeric.sLUP = function LUP(A,tol) {
+    throw new Error("The function numeric.sLUP had a bug in it and has been removed. Please use the new numeric.ccsLUP function instead.");
+};
+
+numeric.sdotMM = function dotMM(A,B) {
+    var p = A.length, q = B.length, BT = numeric.stranspose(B), r = BT.length, Ai, BTk;
+    var i,j,k,accum;
+    var ret = Array(p),reti;
+    for(i=p-1;i>=0;i--) {
+        reti = [];
+        Ai = A[i];
+        for(k=r-1;k>=0;k--) {
+            accum = 0;
+            BTk = BT[k];
+            for(j in Ai) {
+                if(!(Ai.hasOwnProperty(j))) continue;
+                if(j in BTk) { accum += Ai[j]*BTk[j]; }
+            }
+            if(accum) reti[k] = accum;
+        }
+        ret[i] = reti;
+    }
+    return ret;
+}
+
+numeric.sdotMV = function dotMV(A,x) {
+    var p = A.length, Ai, i,j;
+    var ret = Array(p), accum;
+    for(i=p-1;i>=0;i--) {
+        Ai = A[i];
+        accum = 0;
+        for(j in Ai) {
+            if(!(Ai.hasOwnProperty(j))) continue;
+            if(x[j]) accum += Ai[j]*x[j];
+        }
+        if(accum) ret[i] = accum;
+    }
+    return ret;
+}
+
+numeric.sdotVM = function dotMV(x,A) {
+    var i,j,Ai,alpha;
+    var ret = [], accum;
+    for(i in x) {
+        if(!x.hasOwnProperty(i)) continue;
+        Ai = A[i];
+        alpha = x[i];
+        for(j in Ai) {
+            if(!Ai.hasOwnProperty(j)) continue;
+            if(!ret[j]) { ret[j] = 0; }
+            ret[j] += alpha*Ai[j];
+        }
