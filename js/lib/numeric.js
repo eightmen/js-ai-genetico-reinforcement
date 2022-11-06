@@ -2187,3 +2187,82 @@ numeric.sdotVM = function dotMV(x,A) {
             if(!ret[j]) { ret[j] = 0; }
             ret[j] += alpha*Ai[j];
         }
+    }
+    return ret;
+}
+
+numeric.sdotVV = function dotVV(x,y) {
+    var i,ret=0;
+    for(i in x) { if(x[i] && y[i]) ret+= x[i]*y[i]; }
+    return ret;
+}
+
+numeric.sdot = function dot(A,B) {
+    var m = numeric.sdim(A).length, n = numeric.sdim(B).length;
+    var k = m*1000+n;
+    switch(k) {
+    case 0: return A*B;
+    case 1001: return numeric.sdotVV(A,B);
+    case 2001: return numeric.sdotMV(A,B);
+    case 1002: return numeric.sdotVM(A,B);
+    case 2002: return numeric.sdotMM(A,B);
+    default: throw new Error('numeric.sdot not implemented for tensors of order '+m+' and '+n);
+    }
+}
+
+numeric.sscatter = function scatter(V) {
+    var n = V[0].length, Vij, i, j, m = V.length, A = [], Aj;
+    for(i=n-1;i>=0;--i) {
+        if(!V[m-1][i]) continue;
+        Aj = A;
+        for(j=0;j<m-2;j++) {
+            Vij = V[j][i];
+            if(!Aj[Vij]) Aj[Vij] = [];
+            Aj = Aj[Vij];
+        }
+        Aj[V[j][i]] = V[j+1][i];
+    }
+    return A;
+}
+
+numeric.sgather = function gather(A,ret,k) {
+    if(typeof ret === "undefined") ret = [];
+    if(typeof k === "undefined") k = [];
+    var n,i,Ai;
+    n = k.length;
+    for(i in A) {
+        if(A.hasOwnProperty(i)) {
+            k[n] = parseInt(i);
+            Ai = A[i];
+            if(typeof Ai === "number") {
+                if(Ai) {
+                    if(ret.length === 0) {
+                        for(i=n+1;i>=0;--i) ret[i] = [];
+                    }
+                    for(i=n;i>=0;--i) ret[i].push(k[i]);
+                    ret[n+1].push(Ai);
+                }
+            } else gather(Ai,ret,k);
+        }
+    }
+    if(k.length>n) k.pop();
+    return ret;
+}
+
+// 6. Coordinate matrices
+numeric.cLU = function LU(A) {
+    var I = A[0], J = A[1], V = A[2];
+    var p = I.length, m=0, i,j,k,a,b,c;
+    for(i=0;i<p;i++) if(I[i]>m) m=I[i];
+    m++;
+    var L = Array(m), U = Array(m), left = numeric.rep([m],Infinity), right = numeric.rep([m],-Infinity);
+    var Ui, Uj,alpha;
+    for(k=0;k<p;k++) {
+        i = I[k];
+        j = J[k];
+        if(j<left[i]) left[i] = j;
+        if(j>right[i]) right[i] = j;
+    }
+    for(i=0;i<m-1;i++) { if(right[i] > right[i+1]) right[i+1] = right[i]; }
+    for(i=m-1;i>=1;i--) { if(left[i]<left[i-1]) left[i-1] = left[i]; }
+    var countL = 0, countU = 0;
