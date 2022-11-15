@@ -2512,3 +2512,78 @@ numeric.Spline.prototype.roots = function roots() {
                     z0 = z1;
                     continue;
                 }
+                if(z1 === 0 || z0*z1>0) {
+                    t0 = t1;
+                    z0 = z1;
+                    continue;
+                }
+                var side = 0;
+                while(1) {
+                    tm = (z0*t1-z1*t0)/(z0-z1);
+                    if(tm <= t0 || tm >= t1) { break; }
+                    zm = this._at(tm,j);
+                    if(zm*z1>0) {
+                        t1 = tm;
+                        z1 = zm;
+                        if(side === -1) z0*=0.5;
+                        side = -1;
+                    } else if(zm*z0>0) {
+                        t0 = tm;
+                        z0 = zm;
+                        if(side === 1) z1*=0.5;
+                        side = 1;
+                    } else break;
+                }
+                ri.push(tm);
+                t0 = stops[k+1];
+                z0 = this._at(t0, j);
+            }
+            if(z1 === 0) ri.push(t1);
+        }
+        ret[i] = ri;
+    }
+    if(typeof this.yl[0] === "number") return ret[0];
+    return ret;
+}
+numeric.spline = function spline(x,y,k1,kn) {
+    var n = x.length, b = [], dx = [], dy = [];
+    var i;
+    var sub = numeric.sub,mul = numeric.mul,add = numeric.add;
+    for(i=n-2;i>=0;i--) { dx[i] = x[i+1]-x[i]; dy[i] = sub(y[i+1],y[i]); }
+    if(typeof k1 === "string" || typeof kn === "string") { 
+        k1 = kn = "periodic";
+    }
+    // Build sparse tridiagonal system
+    var T = [[],[],[]];
+    switch(typeof k1) {
+    case "undefined":
+        b[0] = mul(3/(dx[0]*dx[0]),dy[0]);
+        T[0].push(0,0);
+        T[1].push(0,1);
+        T[2].push(2/dx[0],1/dx[0]);
+        break;
+    case "string":
+        b[0] = add(mul(3/(dx[n-2]*dx[n-2]),dy[n-2]),mul(3/(dx[0]*dx[0]),dy[0]));
+        T[0].push(0,0,0);
+        T[1].push(n-2,0,1);
+        T[2].push(1/dx[n-2],2/dx[n-2]+2/dx[0],1/dx[0]);
+        break;
+    default:
+        b[0] = k1;
+        T[0].push(0);
+        T[1].push(0);
+        T[2].push(1);
+        break;
+    }
+    for(i=1;i<n-1;i++) {
+        b[i] = add(mul(3/(dx[i-1]*dx[i-1]),dy[i-1]),mul(3/(dx[i]*dx[i]),dy[i]));
+        T[0].push(i,i,i);
+        T[1].push(i-1,i,i+1);
+        T[2].push(1/dx[i-1],2/dx[i-1]+2/dx[i],1/dx[i]);
+    }
+    switch(typeof kn) {
+    case "undefined":
+        b[n-1] = mul(3/(dx[n-2]*dx[n-2]),dy[n-2]);
+        T[0].push(n-1,n-1);
+        T[1].push(n-2,n-1);
+        T[2].push(1/dx[n-2],2/dx[n-2]);
