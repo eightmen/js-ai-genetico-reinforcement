@@ -2352,3 +2352,94 @@ numeric.cgrid = function grid(n,shape) {
     if(typeof shape !== "function") {
         switch(shape) {
         case 'L':
+            shape = function(i,j) { return (i>=n[0]/2 || j<n[1]/2); }
+            break;
+        default:
+            shape = function(i,j) { return true; };
+            break;
+        }
+    }
+    count=0;
+    for(i=1;i<n[0]-1;i++) for(j=1;j<n[1]-1;j++) 
+        if(shape(i,j)) {
+            ret[i][j] = count;
+            count++;
+        }
+    return ret;
+}
+
+numeric.cdelsq = function delsq(g) {
+    var dir = [[-1,0],[0,-1],[0,1],[1,0]];
+    var s = numeric.dim(g), m = s[0], n = s[1], i,j,k,p,q;
+    var Li = [], Lj = [], Lv = [];
+    for(i=1;i<m-1;i++) for(j=1;j<n-1;j++) {
+        if(g[i][j]<0) continue;
+        for(k=0;k<4;k++) {
+            p = i+dir[k][0];
+            q = j+dir[k][1];
+            if(g[p][q]<0) continue;
+            Li.push(g[i][j]);
+            Lj.push(g[p][q]);
+            Lv.push(-1);
+        }
+        Li.push(g[i][j]);
+        Lj.push(g[i][j]);
+        Lv.push(4);
+    }
+    return [Li,Lj,Lv];
+}
+
+numeric.cdotMV = function dotMV(A,x) {
+    var ret, Ai = A[0], Aj = A[1], Av = A[2],k,p=Ai.length,N;
+    N=0;
+    for(k=0;k<p;k++) { if(Ai[k]>N) N = Ai[k]; }
+    N++;
+    ret = numeric.rep([N],0);
+    for(k=0;k<p;k++) { ret[Ai[k]]+=Av[k]*x[Aj[k]]; }
+    return ret;
+}
+
+// 7. Splines
+
+numeric.Spline = function Spline(x,yl,yr,kl,kr) { this.x = x; this.yl = yl; this.yr = yr; this.kl = kl; this.kr = kr; }
+numeric.Spline.prototype._at = function _at(x1,p) {
+    var x = this.x;
+    var yl = this.yl;
+    var yr = this.yr;
+    var kl = this.kl;
+    var kr = this.kr;
+    var x1,a,b,t;
+    var add = numeric.add, sub = numeric.sub, mul = numeric.mul;
+    a = sub(mul(kl[p],x[p+1]-x[p]),sub(yr[p+1],yl[p]));
+    b = add(mul(kr[p+1],x[p]-x[p+1]),sub(yr[p+1],yl[p]));
+    t = (x1-x[p])/(x[p+1]-x[p]);
+    var s = t*(1-t);
+    return add(add(add(mul(1-t,yl[p]),mul(t,yr[p+1])),mul(a,s*(1-t))),mul(b,s*t));
+}
+numeric.Spline.prototype.at = function at(x0) {
+    if(typeof x0 === "number") {
+        var x = this.x;
+        var n = x.length;
+        var p,q,mid,floor = Math.floor,a,b,t;
+        p = 0;
+        q = n-1;
+        while(q-p>1) {
+            mid = floor((p+q)/2);
+            if(x[mid] <= x0) p = mid;
+            else q = mid;
+        }
+        return this._at(x0,p);
+    }
+    var n = x0.length, i, ret = Array(n);
+    for(i=n-1;i!==-1;--i) ret[i] = this.at(x0[i]);
+    return ret;
+}
+numeric.Spline.prototype.diff = function diff() {
+    var x = this.x;
+    var yl = this.yl;
+    var yr = this.yr;
+    var kl = this.kl;
+    var kr = this.kr;
+    var n = yl.length;
+    var i,dx,dy;
+    var zl = kl, zr = kr, pl = Array(n), pr = Array(n);
