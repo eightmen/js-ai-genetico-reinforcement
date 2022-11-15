@@ -2266,3 +2266,89 @@ numeric.cLU = function LU(A) {
     for(i=0;i<m-1;i++) { if(right[i] > right[i+1]) right[i+1] = right[i]; }
     for(i=m-1;i>=1;i--) { if(left[i]<left[i-1]) left[i-1] = left[i]; }
     var countL = 0, countU = 0;
+    for(i=0;i<m;i++) {
+        U[i] = numeric.rep([right[i]-left[i]+1],0);
+        L[i] = numeric.rep([i-left[i]],0);
+        countL += i-left[i]+1;
+        countU += right[i]-i+1;
+    }
+    for(k=0;k<p;k++) { i = I[k]; U[i][J[k]-left[i]] = V[k]; }
+    for(i=0;i<m-1;i++) {
+        a = i-left[i];
+        Ui = U[i];
+        for(j=i+1;left[j]<=i && j<m;j++) {
+            b = i-left[j];
+            c = right[i]-i;
+            Uj = U[j];
+            alpha = Uj[b]/Ui[a];
+            if(alpha) {
+                for(k=1;k<=c;k++) { Uj[k+b] -= alpha*Ui[k+a]; }
+                L[j][i-left[j]] = alpha;
+            }
+        }
+    }
+    var Ui = [], Uj = [], Uv = [], Li = [], Lj = [], Lv = [];
+    var p,q,foo;
+    p=0; q=0;
+    for(i=0;i<m;i++) {
+        a = left[i];
+        b = right[i];
+        foo = U[i];
+        for(j=i;j<=b;j++) {
+            if(foo[j-a]) {
+                Ui[p] = i;
+                Uj[p] = j;
+                Uv[p] = foo[j-a];
+                p++;
+            }
+        }
+        foo = L[i];
+        for(j=a;j<i;j++) {
+            if(foo[j-a]) {
+                Li[q] = i;
+                Lj[q] = j;
+                Lv[q] = foo[j-a];
+                q++;
+            }
+        }
+        Li[q] = i;
+        Lj[q] = i;
+        Lv[q] = 1;
+        q++;
+    }
+    return {U:[Ui,Uj,Uv], L:[Li,Lj,Lv]};
+};
+
+numeric.cLUsolve = function LUsolve(lu,b) {
+    var L = lu.L, U = lu.U, ret = numeric.clone(b);
+    var Li = L[0], Lj = L[1], Lv = L[2];
+    var Ui = U[0], Uj = U[1], Uv = U[2];
+    var p = Ui.length, q = Li.length;
+    var m = ret.length,i,j,k;
+    k = 0;
+    for(i=0;i<m;i++) {
+        while(Lj[k] < i) {
+            ret[i] -= Lv[k]*ret[Lj[k]];
+            k++;
+        }
+        k++;
+    }
+    k = p-1;
+    for(i=m-1;i>=0;i--) {
+        while(Uj[k] > i) {
+            ret[i] -= Uv[k]*ret[Uj[k]];
+            k--;
+        }
+        ret[i] /= Uv[k];
+        k--;
+    }
+    return ret;
+};
+
+numeric.cgrid = function grid(n,shape) {
+    if(typeof n === "number") n = [n,n];
+    var ret = numeric.rep(n,-1);
+    var i,j,count;
+    if(typeof shape !== "function") {
+        switch(shape) {
+        case 'L':
