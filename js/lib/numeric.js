@@ -2673,3 +2673,89 @@ numeric._ifftpow2 = function _ifftpow2(x,y) {
         y[i] = ye[j] + ci*yo[j] + si*xo[j];
     }
 }
+numeric.ifftpow2 = function ifftpow2(x,y) {
+    numeric._ifftpow2(x,y);
+    numeric.diveq(x,x.length);
+    numeric.diveq(y,y.length);
+}
+numeric.convpow2 = function convpow2(ax,ay,bx,by) {
+    numeric.fftpow2(ax,ay);
+    numeric.fftpow2(bx,by);
+    var i,n = ax.length,axi,bxi,ayi,byi;
+    for(i=n-1;i!==-1;--i) {
+        axi = ax[i]; ayi = ay[i]; bxi = bx[i]; byi = by[i];
+        ax[i] = axi*bxi-ayi*byi;
+        ay[i] = axi*byi+ayi*bxi;
+    }
+    numeric.ifftpow2(ax,ay);
+}
+numeric.T.prototype.fft = function fft() {
+    var x = this.x, y = this.y;
+    var n = x.length, log = Math.log, log2 = log(2),
+        p = Math.ceil(log(2*n-1)/log2), m = Math.pow(2,p);
+    var cx = numeric.rep([m],0), cy = numeric.rep([m],0), cos = Math.cos, sin = Math.sin;
+    var k, c = (-3.141592653589793238462643383279502884197169399375105820/n),t;
+    var a = numeric.rep([m],0), b = numeric.rep([m],0),nhalf = Math.floor(n/2);
+    for(k=0;k<n;k++) a[k] = x[k];
+    if(typeof y !== "undefined") for(k=0;k<n;k++) b[k] = y[k];
+    cx[0] = 1;
+    for(k=1;k<=m/2;k++) {
+        t = c*k*k;
+        cx[k] = cos(t);
+        cy[k] = sin(t);
+        cx[m-k] = cos(t);
+        cy[m-k] = sin(t)
+    }
+    var X = new numeric.T(a,b), Y = new numeric.T(cx,cy);
+    X = X.mul(Y);
+    numeric.convpow2(X.x,X.y,numeric.clone(Y.x),numeric.neg(Y.y));
+    X = X.mul(Y);
+    X.x.length = n;
+    X.y.length = n;
+    return X;
+}
+numeric.T.prototype.ifft = function ifft() {
+    var x = this.x, y = this.y;
+    var n = x.length, log = Math.log, log2 = log(2),
+        p = Math.ceil(log(2*n-1)/log2), m = Math.pow(2,p);
+    var cx = numeric.rep([m],0), cy = numeric.rep([m],0), cos = Math.cos, sin = Math.sin;
+    var k, c = (3.141592653589793238462643383279502884197169399375105820/n),t;
+    var a = numeric.rep([m],0), b = numeric.rep([m],0),nhalf = Math.floor(n/2);
+    for(k=0;k<n;k++) a[k] = x[k];
+    if(typeof y !== "undefined") for(k=0;k<n;k++) b[k] = y[k];
+    cx[0] = 1;
+    for(k=1;k<=m/2;k++) {
+        t = c*k*k;
+        cx[k] = cos(t);
+        cy[k] = sin(t);
+        cx[m-k] = cos(t);
+        cy[m-k] = sin(t)
+    }
+    var X = new numeric.T(a,b), Y = new numeric.T(cx,cy);
+    X = X.mul(Y);
+    numeric.convpow2(X.x,X.y,numeric.clone(Y.x),numeric.neg(Y.y));
+    X = X.mul(Y);
+    X.x.length = n;
+    X.y.length = n;
+    return X.div(n);
+}
+
+//9. Unconstrained optimization
+numeric.gradient = function gradient(f,x) {
+    var n = x.length;
+    var f0 = f(x);
+    if(isNaN(f0)) throw new Error('gradient: f(x) is a NaN!');
+    var max = Math.max;
+    var i,x0 = numeric.clone(x),f1,f2, J = Array(n);
+    var div = numeric.div, sub = numeric.sub,errest,roundoff,max = Math.max,eps = 1e-3,abs = Math.abs, min = Math.min;
+    var t0,t1,t2,it=0,d1,d2,N;
+    for(i=0;i<n;i++) {
+        var h = max(1e-6*f0,1e-8);
+        while(1) {
+            ++it;
+            if(it>20) { throw new Error("Numerical gradient fails"); }
+            x0[i] = x[i]+h;
+            f1 = f(x0);
+            x0[i] = x[i]-h;
+            f2 = f(x0);
+            x0[i] = x[i];
