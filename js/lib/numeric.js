@@ -2843,3 +2843,70 @@ numeric.Dopri = function Dopri(x,y,f,ymid,iterations,msg,events) {
     this.ymid = ymid;
     this.iterations = iterations;
     this.events = events;
+    this.message = msg;
+}
+numeric.Dopri.prototype._at = function _at(xi,j) {
+    function sqr(x) { return x*x; }
+    var sol = this;
+    var xs = sol.x;
+    var ys = sol.y;
+    var k1 = sol.f;
+    var ymid = sol.ymid;
+    var n = xs.length;
+    var x0,x1,xh,y0,y1,yh,xi;
+    var floor = Math.floor,h;
+    var c = 0.5;
+    var add = numeric.add, mul = numeric.mul,sub = numeric.sub, p,q,w;
+    x0 = xs[j];
+    x1 = xs[j+1];
+    y0 = ys[j];
+    y1 = ys[j+1];
+    h  = x1-x0;
+    xh = x0+c*h;
+    yh = ymid[j];
+    p = sub(k1[j  ],mul(y0,1/(x0-xh)+2/(x0-x1)));
+    q = sub(k1[j+1],mul(y1,1/(x1-xh)+2/(x1-x0)));
+    w = [sqr(xi - x1) * (xi - xh) / sqr(x0 - x1) / (x0 - xh),
+         sqr(xi - x0) * sqr(xi - x1) / sqr(x0 - xh) / sqr(x1 - xh),
+         sqr(xi - x0) * (xi - xh) / sqr(x1 - x0) / (x1 - xh),
+         (xi - x0) * sqr(xi - x1) * (xi - xh) / sqr(x0-x1) / (x0 - xh),
+         (xi - x1) * sqr(xi - x0) * (xi - xh) / sqr(x0-x1) / (x1 - xh)];
+    return add(add(add(add(mul(y0,w[0]),
+                           mul(yh,w[1])),
+                           mul(y1,w[2])),
+                           mul( p,w[3])),
+                           mul( q,w[4]));
+}
+numeric.Dopri.prototype.at = function at(x) {
+    var i,j,k,floor = Math.floor;
+    if(typeof x !== "number") {
+        var n = x.length, ret = Array(n);
+        for(i=n-1;i!==-1;--i) {
+            ret[i] = this.at(x[i]);
+        }
+        return ret;
+    }
+    var x0 = this.x;
+    i = 0; j = x0.length-1;
+    while(j-i>1) {
+        k = floor(0.5*(i+j));
+        if(x0[k] <= x) i = k;
+        else j = k;
+    }
+    return this._at(x,i);
+}
+
+numeric.dopri = function dopri(x0,x1,y0,f,tol,maxit,event) {
+    if(typeof tol === "undefined") { tol = 1e-6; }
+    if(typeof maxit === "undefined") { maxit = 1000; }
+    var xs = [x0], ys = [y0], k1 = [f(x0,y0)], k2,k3,k4,k5,k6,k7, ymid = [];
+    var A2 = 1/5;
+    var A3 = [3/40,9/40];
+    var A4 = [44/45,-56/15,32/9];
+    var A5 = [19372/6561,-25360/2187,64448/6561,-212/729];
+    var A6 = [9017/3168,-355/33,46732/5247,49/176,-5103/18656];
+    var b = [35/384,0,500/1113,125/192,-2187/6784,11/84];
+    var bm = [0.5*6025192743/30085553152,
+              0,
+              0.5*51252292925/65400821598,
+              0.5*-2691868925/45128329728,
