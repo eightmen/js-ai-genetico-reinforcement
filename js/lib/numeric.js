@@ -3096,3 +3096,104 @@ numeric.LUsolve = function LUsolve(LUP, b) {
 
     x[i] /= LUi[i];
   }
+
+  return x;
+}
+
+numeric.solve = function solve(A,b,fast) { return numeric.LUsolve(numeric.LU(A,fast), b); }
+
+// 12. Linear programming
+numeric.echelonize = function echelonize(A) {
+    var s = numeric.dim(A), m = s[0], n = s[1];
+    var I = numeric.identity(m);
+    var P = Array(m);
+    var i,j,k,l,Ai,Ii,Z,a;
+    var abs = Math.abs;
+    var diveq = numeric.diveq;
+    A = numeric.clone(A);
+    for(i=0;i<m;++i) {
+        k = 0;
+        Ai = A[i];
+        Ii = I[i];
+        for(j=1;j<n;++j) if(abs(Ai[k])<abs(Ai[j])) k=j;
+        P[i] = k;
+        diveq(Ii,Ai[k]);
+        diveq(Ai,Ai[k]);
+        for(j=0;j<m;++j) if(j!==i) {
+            Z = A[j]; a = Z[k];
+            for(l=n-1;l!==-1;--l) Z[l] -= Ai[l]*a;
+            Z = I[j];
+            for(l=m-1;l!==-1;--l) Z[l] -= Ii[l]*a;
+        }
+    }
+    return {I:I, A:A, P:P};
+}
+
+numeric.__solveLP = function __solveLP(c,A,b,tol,maxit,x,flag) {
+    var sum = numeric.sum, log = numeric.log, mul = numeric.mul, sub = numeric.sub, dot = numeric.dot, div = numeric.div, add = numeric.add;
+    var m = c.length, n = b.length,y;
+    var unbounded = false, cb,i0=0;
+    var alpha = 1.0;
+    var f0,df0,AT = numeric.transpose(A), svd = numeric.svd,transpose = numeric.transpose,leq = numeric.leq, sqrt = Math.sqrt, abs = Math.abs;
+    var muleq = numeric.muleq;
+    var norm = numeric.norminf, any = numeric.any,min = Math.min;
+    var all = numeric.all, gt = numeric.gt;
+    var p = Array(m), A0 = Array(n),e=numeric.rep([n],1), H;
+    var solve = numeric.solve, z = sub(b,dot(A,x)),count;
+    var dotcc = dot(c,c);
+    var g;
+    for(count=i0;count<maxit;++count) {
+        var i,j,d;
+        for(i=n-1;i!==-1;--i) A0[i] = div(A[i],z[i]);
+        var A1 = transpose(A0);
+        for(i=m-1;i!==-1;--i) p[i] = (/*x[i]+*/sum(A1[i]));
+        alpha = 0.25*abs(dotcc/dot(c,p));
+        var a1 = 100*sqrt(dotcc/dot(p,p));
+        if(!isFinite(alpha) || alpha>a1) alpha = a1;
+        g = add(c,mul(alpha,p));
+        H = dot(A1,A0);
+        for(i=m-1;i!==-1;--i) H[i][i] += 1;
+        d = solve(H,div(g,alpha),true);
+        var t0 = div(z,dot(A,d));
+        var t = 1.0;
+        for(i=n-1;i!==-1;--i) if(t0[i]<0) t = min(t,-0.999*t0[i]);
+        y = sub(x,mul(d,t));
+        z = sub(b,dot(A,y));
+        if(!all(gt(z,0))) return { solution: x, message: "", iterations: count };
+        x = y;
+        if(alpha<tol) return { solution: y, message: "", iterations: count };
+        if(flag) {
+            var s = dot(c,g), Ag = dot(A,g);
+            unbounded = true;
+            for(i=n-1;i!==-1;--i) if(s*Ag[i]<0) { unbounded = false; break; }
+        } else {
+            if(x[m-1]>=0) unbounded = false;
+            else unbounded = true;
+        }
+        if(unbounded) return { solution: y, message: "Unbounded", iterations: count };
+    }
+    return { solution: x, message: "maximum iteration count exceeded", iterations:count };
+}
+
+numeric._solveLP = function _solveLP(c,A,b,tol,maxit) {
+    var m = c.length, n = b.length,y;
+    var sum = numeric.sum, log = numeric.log, mul = numeric.mul, sub = numeric.sub, dot = numeric.dot, div = numeric.div, add = numeric.add;
+    var c0 = numeric.rep([m],0).concat([1]);
+    var J = numeric.rep([n,1],-1);
+    var A0 = numeric.blockMatrix([[A                   ,   J  ]]);
+    var b0 = b;
+    var y = numeric.rep([m],0).concat(Math.max(0,numeric.sup(numeric.neg(b)))+1);
+    var x0 = numeric.__solveLP(c0,A0,b0,tol,maxit,y,false);
+    var x = numeric.clone(x0.solution);
+    x.length = m;
+    var foo = numeric.inf(sub(b,dot(A,x)));
+    if(foo<0) { return { solution: NaN, message: "Infeasible", iterations: x0.iterations }; }
+    var ret = numeric.__solveLP(c, A, b, tol, maxit-x0.iterations, x, true);
+    ret.iterations += x0.iterations;
+    return ret;
+};
+
+numeric.solveLP = function solveLP(c,A,b,Aeq,beq,tol,maxit) {
+    if(typeof maxit === "undefined") maxit = 1000;
+    if(typeof tol === "undefined") tol = numeric.epsilon;
+    if(typeof Aeq === "undefined") return numeric._solveLP(c,A,b,tol,maxit);
