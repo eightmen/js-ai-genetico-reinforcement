@@ -3197,3 +3197,86 @@ numeric.solveLP = function solveLP(c,A,b,Aeq,beq,tol,maxit) {
     if(typeof maxit === "undefined") maxit = 1000;
     if(typeof tol === "undefined") tol = numeric.epsilon;
     if(typeof Aeq === "undefined") return numeric._solveLP(c,A,b,tol,maxit);
+    var m = Aeq.length, n = Aeq[0].length, o = A.length;
+    var B = numeric.echelonize(Aeq);
+    var flags = numeric.rep([n],0);
+    var P = B.P;
+    var Q = [];
+    var i;
+    for(i=P.length-1;i!==-1;--i) flags[P[i]] = 1;
+    for(i=n-1;i!==-1;--i) if(flags[i]===0) Q.push(i);
+    var g = numeric.getRange;
+    var I = numeric.linspace(0,m-1), J = numeric.linspace(0,o-1);
+    var Aeq2 = g(Aeq,I,Q), A1 = g(A,J,P), A2 = g(A,J,Q), dot = numeric.dot, sub = numeric.sub;
+    var A3 = dot(A1,B.I);
+    var A4 = sub(A2,dot(A3,Aeq2)), b4 = sub(b,dot(A3,beq));
+    var c1 = Array(P.length), c2 = Array(Q.length);
+    for(i=P.length-1;i!==-1;--i) c1[i] = c[P[i]];
+    for(i=Q.length-1;i!==-1;--i) c2[i] = c[Q[i]];
+    var c4 = sub(c2,dot(c1,dot(B.I,Aeq2)));
+    var S = numeric._solveLP(c4,A4,b4,tol,maxit);
+    var x2 = S.solution;
+    if(x2!==x2) return S;
+    var x1 = dot(B.I,sub(beq,dot(Aeq2,x2)));
+    var x = Array(c.length);
+    for(i=P.length-1;i!==-1;--i) x[P[i]] = x1[i];
+    for(i=Q.length-1;i!==-1;--i) x[Q[i]] = x2[i];
+    return { solution: x, message:S.message, iterations: S.iterations };
+}
+
+numeric.MPStoLP = function MPStoLP(MPS) {
+    if(MPS instanceof String) { MPS.split('\n'); }
+    var state = 0;
+    var states = ['Initial state','NAME','ROWS','COLUMNS','RHS','BOUNDS','ENDATA'];
+    var n = MPS.length;
+    var i,j,z,N=0,rows = {}, sign = [], rl = 0, vars = {}, nv = 0;
+    var name;
+    var c = [], A = [], b = [];
+    function err(e) { throw new Error('MPStoLP: '+e+'\nLine '+i+': '+MPS[i]+'\nCurrent state: '+states[state]+'\n'); }
+    for(i=0;i<n;++i) {
+        z = MPS[i];
+        var w0 = z.match(/\S*/g);
+        var w = [];
+        for(j=0;j<w0.length;++j) if(w0[j]!=="") w.push(w0[j]);
+        if(w.length === 0) continue;
+        for(j=0;j<states.length;++j) if(z.substr(0,states[j].length) === states[j]) break;
+        if(j<states.length) {
+            state = j;
+            if(j===1) { name = w[1]; }
+            if(j===6) return { name:name, c:c, A:numeric.transpose(A), b:b, rows:rows, vars:vars };
+            continue;
+        }
+        switch(state) {
+        case 0: case 1: err('Unexpected line');
+        case 2: 
+            switch(w[0]) {
+            case 'N': if(N===0) N = w[1]; else err('Two or more N rows'); break;
+            case 'L': rows[w[1]] = rl; sign[rl] = 1; b[rl] = 0; ++rl; break;
+            case 'G': rows[w[1]] = rl; sign[rl] = -1;b[rl] = 0; ++rl; break;
+            case 'E': rows[w[1]] = rl; sign[rl] = 0;b[rl] = 0; ++rl; break;
+            default: err('Parse error '+numeric.prettyPrint(w));
+            }
+            break;
+        case 3:
+            if(!vars.hasOwnProperty(w[0])) { vars[w[0]] = nv; c[nv] = 0; A[nv] = numeric.rep([rl],0); ++nv; }
+            var p = vars[w[0]];
+            for(j=1;j<w.length;j+=2) {
+                if(w[j] === N) { c[p] = parseFloat(w[j+1]); continue; }
+                var q = rows[w[j]];
+                A[p][q] = (sign[q]<0?-1:1)*parseFloat(w[j+1]);
+            }
+            break;
+        case 4:
+            for(j=1;j<w.length;j+=2) b[rows[w[j]]] = (sign[rows[w[j]]]<0?-1:1)*parseFloat(w[j+1]);
+            break;
+        case 5: /*FIXME*/ break;
+        case 6: err('Internal error');
+        }
+    }
+    err('Reached end of file without ENDATA');
+}
+// seedrandom.js version 2.0.
+// Author: David Bau 4/2/2011
+//
+// Defines a method Math.seedrandom() that, when called, substitutes
+// an explicitly seeded RC4-based algorithm for Math.random().  Also
