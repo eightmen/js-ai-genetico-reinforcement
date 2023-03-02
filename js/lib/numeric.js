@@ -3367,3 +3367,73 @@ numeric.MPStoLP = function MPStoLP(MPS) {
 // DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+/**
+ * All code is in an anonymous closure to keep the global namespace clean.
+ *
+ * @param {number=} overflow 
+ * @param {number=} startdenom
+ */
+
+// Patched by Seb so that seedrandom.js does not pollute the Math object.
+// My tests suggest that doing Math.trouble = 1 makes Math lookups about 5%
+// slower.
+numeric.seedrandom = { pow:Math.pow, random:Math.random };
+
+(function (pool, math, width, chunks, significance, overflow, startdenom) {
+
+
+//
+// seedrandom()
+// This is the seedrandom function described above.
+//
+math['seedrandom'] = function seedrandom(seed, use_entropy) {
+  var key = [];
+  var arc4;
+
+  // Flatten the seed string or build one from local entropy if needed.
+  seed = mixkey(flatten(
+    use_entropy ? [seed, pool] :
+    arguments.length ? seed :
+    [new Date().getTime(), pool, window], 3), key);
+
+  // Use the seed to initialize an ARC4 generator.
+  arc4 = new ARC4(key);
+
+  // Mix the randomness into accumulated entropy.
+  mixkey(arc4.S, pool);
+
+  // Override Math.random
+
+  // This function returns a random double in [0, 1) that contains
+  // randomness in every bit of the mantissa of the IEEE 754 value.
+
+  math['random'] = function random() {  // Closure to return a random double:
+    var n = arc4.g(chunks);             // Start with a numerator n < 2 ^ 48
+    var d = startdenom;                 //   and denominator d = 2 ^ 48.
+    var x = 0;                          //   and no 'extra last byte'.
+    while (n < significance) {          // Fill up all significant digits by
+      n = (n + x) * width;              //   shifting numerator and
+      d *= width;                       //   denominator and generating a
+      x = arc4.g(1);                    //   new least-significant-byte.
+    }
+    while (n >= overflow) {             // To avoid rounding up, before adding
+      n /= 2;                           //   last byte, shift everything
+      d /= 2;                           //   right using integer math until
+      x >>>= 1;                         //   we have exactly the desired bits.
+    }
+    return (n + x) / d;                 // Form the number within [0, 1).
+  };
+
+  // Return the seed that was used
+  return seed;
+};
+
+//
+// ARC4
+//
+// An ARC4 implementation.  The constructor takes a key in the form of
+// an array of at most (width) integers that should be 0 <= x < (width).
+//
+// The g(count) method returns a pseudorandom integer that concatenates
