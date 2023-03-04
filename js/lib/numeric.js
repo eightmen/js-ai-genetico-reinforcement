@@ -3574,3 +3574,83 @@ function base1to0(A) {
 
 function dpori(a, lda, n) {
     var i, j, k, kp1, t;
+
+    for (k = 1; k <= n; k = k + 1) {
+        a[k][k] = 1 / a[k][k];
+        t = -a[k][k];
+        //~ dscal(k - 1, t, a[1][k], 1);
+        for (i = 1; i < k; i = i + 1) {
+            a[i][k] = t * a[i][k];
+        }
+
+        kp1 = k + 1;
+        if (n < kp1) {
+            break;
+        }
+        for (j = kp1; j <= n; j = j + 1) {
+            t = a[k][j];
+            a[k][j] = 0;
+            //~ daxpy(k, t, a[1][k], 1, a[1][j], 1);
+            for (i = 1; i <= k; i = i + 1) {
+                a[i][j] = a[i][j] + (t * a[i][k]);
+            }
+        }
+    }
+
+}
+
+function dposl(a, lda, n, b) {
+    var i, k, kb, t;
+
+    for (k = 1; k <= n; k = k + 1) {
+        //~ t = ddot(k - 1, a[1][k], 1, b[1], 1);
+        t = 0;
+        for (i = 1; i < k; i = i + 1) {
+            t = t + (a[i][k] * b[i]);
+        }
+
+        b[k] = (b[k] - t) / a[k][k];
+    }
+
+    for (kb = 1; kb <= n; kb = kb + 1) {
+        k = n + 1 - kb;
+        b[k] = b[k] / a[k][k];
+        t = -b[k];
+        //~ daxpy(k - 1, t, a[1][k], 1, b[1], 1);
+        for (i = 1; i < k; i = i + 1) {
+            b[i] = b[i] + (t * a[i][k]);
+        }
+    }
+}
+
+function dpofa(a, lda, n, info) {
+    var i, j, jm1, k, t, s;
+
+    for (j = 1; j <= n; j = j + 1) {
+        info[1] = j;
+        s = 0;
+        jm1 = j - 1;
+        if (jm1 < 1) {
+            s = a[j][j] - s;
+            if (s <= 0) {
+                break;
+            }
+            a[j][j] = Math.sqrt(s);
+        } else {
+            for (k = 1; k <= jm1; k = k + 1) {
+                //~ t = a[k][j] - ddot(k - 1, a[1][k], 1, a[1][j], 1);
+                t = a[k][j];
+                for (i = 1; i < k; i = i + 1) {
+                    t = t - (a[i][j] * a[i][k]);
+                }
+                t = t / a[k][k];
+                a[k][j] = t;
+                s = s + t * t;
+            }
+            s = a[j][j] - s;
+            if (s <= 0) {
+                break;
+            }
+            a[j][j] = Math.sqrt(s);
+        }
+        info[1] = 0;
