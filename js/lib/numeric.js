@@ -3654,3 +3654,86 @@ function dpofa(a, lda, n, info) {
             a[j][j] = Math.sqrt(s);
         }
         info[1] = 0;
+    }
+}
+
+function qpgen2(dmat, dvec, fddmat, n, sol, crval, amat,
+    bvec, fdamat, q, meq, iact, nact, iter, work, ierr) {
+
+    var i, j, l, l1, info, it1, iwzv, iwrv, iwrm, iwsv, iwuv, nvl, r, iwnbv,
+        temp, sum, t1, tt, gc, gs, nu,
+        t1inf, t2min,
+        vsmall, tmpa, tmpb,
+        go;
+
+    r = Math.min(n, q);
+    l = 2 * n + (r * (r + 5)) / 2 + 2 * q + 1;
+
+    vsmall = 1.0e-60;
+    do {
+        vsmall = vsmall + vsmall;
+        tmpa = 1 + 0.1 * vsmall;
+        tmpb = 1 + 0.2 * vsmall;
+    } while (tmpa <= 1 || tmpb <= 1);
+
+    for (i = 1; i <= n; i = i + 1) {
+        work[i] = dvec[i];
+    }
+    for (i = n + 1; i <= l; i = i + 1) {
+        work[i] = 0;
+    }
+    for (i = 1; i <= q; i = i + 1) {
+        iact[i] = 0;
+    }
+
+    info = [];
+
+    if (ierr[1] === 0) {
+        dpofa(dmat, fddmat, n, info);
+        if (info[1] !== 0) {
+            ierr[1] = 2;
+            return;
+        }
+        dposl(dmat, fddmat, n, dvec);
+        dpori(dmat, fddmat, n);
+    } else {
+        for (j = 1; j <= n; j = j + 1) {
+            sol[j] = 0;
+            for (i = 1; i <= j; i = i + 1) {
+                sol[j] = sol[j] + dmat[i][j] * dvec[i];
+            }
+        }
+        for (j = 1; j <= n; j = j + 1) {
+            dvec[j] = 0;
+            for (i = j; i <= n; i = i + 1) {
+                dvec[j] = dvec[j] + dmat[j][i] * sol[i];
+            }
+        }
+    }
+
+    crval[1] = 0;
+    for (j = 1; j <= n; j = j + 1) {
+        sol[j] = dvec[j];
+        crval[1] = crval[1] + work[j] * sol[j];
+        work[j] = 0;
+        for (i = j + 1; i <= n; i = i + 1) {
+            dmat[i][j] = 0;
+        }
+    }
+    crval[1] = -crval[1] / 2;
+    ierr[1] = 0;
+
+    iwzv = n;
+    iwrv = iwzv + n;
+    iwuv = iwrv + r;
+    iwrm = iwuv + r + 1;
+    iwsv = iwrm + (r * (r + 1)) / 2;
+    iwnbv = iwsv + q;
+
+    for (i = 1; i <= q; i = i + 1) {
+        sum = 0;
+        for (j = 1; j <= n; j = j + 1) {
+            sum = sum + amat[j][i] * amat[j][i];
+        }
+        work[iwnbv + i] = Math.sqrt(sum);
+    }
