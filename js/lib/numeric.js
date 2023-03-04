@@ -3512,3 +3512,65 @@ function flatten(obj, depth, result, prop, typ) {
 /** @param {number=} smear 
   * @param {number=} j */
 function mixkey(seed, key, smear, j) {
+  seed += '';                         // Ensure the seed is a string
+  smear = 0;
+  for (j = 0; j < seed.length; j++) {
+    key[lowbits(j)] =
+      lowbits((smear ^= key[lowbits(j)] * 19) + seed.charCodeAt(j));
+  }
+  seed = '';
+  for (j in key) { seed += String.fromCharCode(key[j]); }
+  return seed;
+}
+
+//
+// lowbits()
+// A quick "n mod width" for width a power of 2.
+//
+function lowbits(n) { return n & (width - 1); }
+
+//
+// The following constants are related to IEEE 754 limits.
+//
+startdenom = math.pow(width, chunks);
+significance = math.pow(2, significance);
+overflow = significance * 2;
+
+//
+// When seedrandom.js is loaded, we immediately mix a few bits
+// from the built-in RNG into the entropy pool.  Because we do
+// not want to intefere with determinstic PRNG state later,
+// seedrandom will not call math.random on its own again after
+// initialization.
+//
+mixkey(math.random(), pool);
+
+// End anonymous scope, and pass initial values.
+}(
+  [],   // pool: entropy pool starts empty
+  numeric.seedrandom, // math: package containing random, pow, and seedrandom
+  256,  // width: each RC4 output is 0 <= x < 256
+  6,    // chunks: at least six RC4 outputs for each double
+  52    // significance: there are 52 significant digits in a double
+  ));
+/* This file is a slightly modified version of quadprog.js from Alberto Santini.
+ * It has been slightly modified by Sébastien Loisel to make sure that it handles
+ * 0-based Arrays instead of 1-based Arrays.
+ * License is in resources/LICENSE.quadprog */
+(function(exports) {
+
+function base0to1(A) {
+    if(typeof A !== "object") { return A; }
+    var ret = [], i,n=A.length;
+    for(i=0;i<n;i++) ret[i+1] = base0to1(A[i]);
+    return ret;
+}
+function base1to0(A) {
+    if(typeof A !== "object") { return A; }
+    var ret = [], i,n=A.length;
+    for(i=1;i<n;i++) ret[i-1] = base1to0(A[i]);
+    return ret;
+}
+
+function dpori(a, lda, n) {
+    var i, j, k, kp1, t;
