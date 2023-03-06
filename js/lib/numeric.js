@@ -3893,3 +3893,68 @@ function qpgen2(dmat, dvec, fddmat, n, sol, crval, amat,
 
             if (t2min) {
                 nact = nact + 1;
+                iact[nact] = nvl;
+
+                l = iwrm + ((nact - 1) * nact) / 2 + 1;
+                for (i = 1; i <= nact - 1; i = i + 1) {
+                    work[l] = work[i];
+                    l = l + 1;
+                }
+
+                if (nact === n) {
+                    work[l] = work[n];
+                } else {
+                    for (i = n; i >= nact + 1; i = i - 1) {
+                        if (work[i] === 0) {
+                            // continue;
+                            break;
+                        }
+                        gc = Math.max(Math.abs(work[i - 1]), Math.abs(work[i]));
+                        gs = Math.min(Math.abs(work[i - 1]), Math.abs(work[i]));
+                        if (work[i - 1] >= 0) {
+                            temp = Math.abs(gc * Math.sqrt(1 + gs * gs / (gc * gc)));
+                        } else {
+                            temp = -Math.abs(gc * Math.sqrt(1 + gs * gs / (gc * gc)));
+                        }
+                        gc = work[i - 1] / temp;
+                        gs = work[i] / temp;
+
+                        if (gc === 1) {
+                            // continue;
+                            break;
+                        }
+                        if (gc === 0) {
+                            work[i - 1] = gs * temp;
+                            for (j = 1; j <= n; j = j + 1) {
+                                temp = dmat[j][i - 1];
+                                dmat[j][i - 1] = dmat[j][i];
+                                dmat[j][i] = temp;
+                            }
+                        } else {
+                            work[i - 1] = temp;
+                            nu = gs / (1 + gc);
+                            for (j = 1; j <= n; j = j + 1) {
+                                temp = gc * dmat[j][i - 1] + gs * dmat[j][i];
+                                dmat[j][i] = nu * (dmat[j][i - 1] + temp) - dmat[j][i];
+                                dmat[j][i - 1] = temp;
+
+                            }
+                        }
+                    }
+                    work[l] = work[nact];
+                }
+            } else {
+                sum = -bvec[nvl];
+                for (j = 1; j <= n; j = j + 1) {
+                    sum = sum + sol[j] * amat[j][nvl];
+                }
+                if (nvl > meq) {
+                    work[iwsv + nvl] = sum;
+                } else {
+                    work[iwsv + nvl] = -Math.abs(sum);
+                    if (sum > 0) {
+                        for (j = 1; j <= n; j = j + 1) {
+                            amat[j][nvl] = -amat[j][nvl];
+                        }
+                        bvec[nvl] = -bvec[nvl];
+                    }
