@@ -3958,3 +3958,94 @@ function qpgen2(dmat, dvec, fddmat, n, sol, crval, amat,
                         }
                         bvec[nvl] = -bvec[nvl];
                     }
+                }
+                // GOTO 700
+                return 700;
+            }
+        }
+
+        return 0;
+    }
+
+    function fn_goto_797() {
+        l = iwrm + (it1 * (it1 + 1)) / 2 + 1;
+        l1 = l + it1;
+        if (work[l1] === 0) {
+            // GOTO 798
+            return 798;
+        }
+        gc = Math.max(Math.abs(work[l1 - 1]), Math.abs(work[l1]));
+        gs = Math.min(Math.abs(work[l1 - 1]), Math.abs(work[l1]));
+        if (work[l1 - 1] >= 0) {
+            temp = Math.abs(gc * Math.sqrt(1 + gs * gs / (gc * gc)));
+        } else {
+            temp = -Math.abs(gc * Math.sqrt(1 + gs * gs / (gc * gc)));
+        }
+        gc = work[l1 - 1] / temp;
+        gs = work[l1] / temp;
+
+        if (gc === 1) {
+            // GOTO 798
+            return 798;
+        }
+        if (gc === 0) {
+            for (i = it1 + 1; i <= nact; i = i + 1) {
+                temp = work[l1 - 1];
+                work[l1 - 1] = work[l1];
+                work[l1] = temp;
+                l1 = l1 + i;
+            }
+            for (i = 1; i <= n; i = i + 1) {
+                temp = dmat[i][it1];
+                dmat[i][it1] = dmat[i][it1 + 1];
+                dmat[i][it1 + 1] = temp;
+            }
+        } else {
+            nu = gs / (1 + gc);
+            for (i = it1 + 1; i <= nact; i = i + 1) {
+                temp = gc * work[l1 - 1] + gs * work[l1];
+                work[l1] = nu * (work[l1 - 1] + temp) - work[l1];
+                work[l1 - 1] = temp;
+                l1 = l1 + i;
+            }
+            for (i = 1; i <= n; i = i + 1) {
+                temp = gc * dmat[i][it1] + gs * dmat[i][it1 + 1];
+                dmat[i][it1 + 1] = nu * (dmat[i][it1] + temp) - dmat[i][it1 + 1];
+                dmat[i][it1] = temp;
+            }
+        }
+
+        return 0;
+    }
+
+    function fn_goto_798() {
+        l1 = l - it1;
+        for (i = 1; i <= it1; i = i + 1) {
+            work[l1] = work[l];
+            l = l + 1;
+            l1 = l1 + 1;
+        }
+
+        work[iwuv + it1] = work[iwuv + it1 + 1];
+        iact[it1] = iact[it1 + 1];
+        it1 = it1 + 1;
+        if (it1 < nact) {
+            // GOTO 797
+            return 797;
+        }
+
+        return 0;
+    }
+
+    function fn_goto_799() {
+        work[iwuv + nact] = work[iwuv + nact + 1];
+        work[iwuv + nact + 1] = 0;
+        iact[nact] = 0;
+        nact = nact - 1;
+        iter[2] = iter[2] + 1;
+
+        return 0;
+    }
+
+    go = 0;
+    while (true) {
