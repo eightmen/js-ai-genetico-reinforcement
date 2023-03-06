@@ -3813,3 +3813,83 @@ function qpgen2(dmat, dvec, fddmat, n, sol, crval, amat,
             for (j = i + 1; j <= nact; j = j + 1) {
                 sum = sum - work[l] * work[iwrv + j];
                 l = l + j;
+            }
+            sum = sum / work[l1];
+            work[iwrv + i] = sum;
+            if (iact[i] < meq) {
+                // continue;
+                break;
+            }
+            if (sum < 0) {
+                // continue;
+                break;
+            }
+            t1inf = false;
+            it1 = i;
+        }
+
+        if (!t1inf) {
+            t1 = work[iwuv + it1] / work[iwrv + it1];
+            for (i = 1; i <= nact; i = i + 1) {
+                if (iact[i] < meq) {
+                    // continue;
+                    break;
+                }
+                if (work[iwrv + i] < 0) {
+                    // continue;
+                    break;
+                }
+                temp = work[iwuv + i] / work[iwrv + i];
+                if (temp < t1) {
+                    t1 = temp;
+                    it1 = i;
+                }
+            }
+        }
+
+        sum = 0;
+        for (i = iwzv + 1; i <= iwzv + n; i = i + 1) {
+            sum = sum + work[i] * work[i];
+        }
+        if (Math.abs(sum) <= vsmall) {
+            if (t1inf) {
+                ierr[1] = 1;
+                // GOTO 999
+                return 999;
+            } else {
+                for (i = 1; i <= nact; i = i + 1) {
+                    work[iwuv + i] = work[iwuv + i] - t1 * work[iwrv + i];
+                }
+                work[iwuv + nact + 1] = work[iwuv + nact + 1] + t1;
+                // GOTO 700
+                return 700;
+            }
+        } else {
+            sum = 0;
+            for (i = 1; i <= n; i = i + 1) {
+                sum = sum + work[iwzv + i] * amat[i][nvl];
+            }
+            tt = -work[iwsv + nvl] / sum;
+            t2min = true;
+            if (!t1inf) {
+                if (t1 < tt) {
+                    tt = t1;
+                    t2min = false;
+                }
+            }
+
+            for (i = 1; i <= n; i = i + 1) {
+                sol[i] = sol[i] + tt * work[iwzv + i];
+                if (Math.abs(sol[i]) < vsmall) {
+                    sol[i] = 0;
+                }
+            }
+
+            crval[1] = crval[1] + tt * sum * (tt / 2 + work[iwuv + nact + 1]);
+            for (i = 1; i <= nact; i = i + 1) {
+                work[iwuv + i] = work[iwuv + i] - tt * work[iwrv + i];
+            }
+            work[iwuv + nact + 1] = work[iwuv + nact + 1] + tt;
+
+            if (t2min) {
+                nact = nact + 1;
