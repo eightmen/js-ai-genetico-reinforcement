@@ -4134,3 +4134,86 @@ function solveQP(Dmat, dvec, Amat, bvec, meq, factorized) {
         value: base1to0(crval),
         unconstrained_solution: base1to0(dvec),
         iterations: base1to0(iter),
+        iact: base1to0(iact),
+        message: message
+    };
+}
+exports.solveQP = solveQP;
+}(numeric));
+/*
+Shanti Rao sent me this routine by private email. I had to modify it
+slightly to work on Arrays instead of using a Matrix object.
+It is apparently translated from http://stitchpanorama.sourceforge.net/Python/svd.py
+*/
+
+numeric.svd= function svd(A) {
+    var temp;
+//Compute the thin SVD from G. H. Golub and C. Reinsch, Numer. Math. 14, 403-420 (1970)
+	var prec= numeric.epsilon; //Math.pow(2,-52) // assumes double prec
+	var tolerance= 1.e-64/prec;
+	var itmax= 50;
+	var c=0;
+	var i=0;
+	var j=0;
+	var k=0;
+	var l=0;
+	
+	var u= numeric.clone(A);
+	var m= u.length;
+	
+	var n= u[0].length;
+	
+	if (m < n) throw "Need more rows than columns"
+	
+	var e = new Array(n);
+	var q = new Array(n);
+	for (i=0; i<n; i++) e[i] = q[i] = 0.0;
+	var v = numeric.rep([n,n],0);
+//	v.zero();
+	
+ 	function pythag(a,b)
+ 	{
+		a = Math.abs(a)
+		b = Math.abs(b)
+		if (a > b)
+			return a*Math.sqrt(1.0+(b*b/a/a))
+		else if (b == 0.0) 
+			return a
+		return b*Math.sqrt(1.0+(a*a/b/b))
+	}
+
+	//Householder's reduction to bidiagonal form
+
+	var f= 0.0;
+	var g= 0.0;
+	var h= 0.0;
+	var x= 0.0;
+	var y= 0.0;
+	var z= 0.0;
+	var s= 0.0;
+	
+	for (i=0; i < n; i++)
+	{	
+		e[i]= g;
+		s= 0.0;
+		l= i+1;
+		for (j=i; j < m; j++) 
+			s += (u[j][i]*u[j][i]);
+		if (s <= tolerance)
+			g= 0.0;
+		else
+		{	
+			f= u[i][i];
+			g= Math.sqrt(s);
+			if (f >= 0.0) g= -g;
+			h= f*g-s
+			u[i][i]=f-g;
+			for (j=l; j < n; j++)
+			{
+				s= 0.0
+				for (k=i; k < m; k++) 
+					s += u[k][i]*u[k][j]
+				f= s/h
+				for (k=i; k < m; k++) 
+					u[k][j]+=f*u[k][i]
+			}
