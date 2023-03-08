@@ -4217,3 +4217,86 @@ numeric.svd= function svd(A) {
 				for (k=i; k < m; k++) 
 					u[k][j]+=f*u[k][i]
 			}
+		}
+		q[i]= g
+		s= 0.0
+		for (j=l; j < n; j++) 
+			s= s + u[i][j]*u[i][j]
+		if (s <= tolerance)
+			g= 0.0
+		else
+		{	
+			f= u[i][i+1]
+			g= Math.sqrt(s)
+			if (f >= 0.0) g= -g
+			h= f*g - s
+			u[i][i+1] = f-g;
+			for (j=l; j < n; j++) e[j]= u[i][j]/h
+			for (j=l; j < m; j++)
+			{	
+				s=0.0
+				for (k=l; k < n; k++) 
+					s += (u[j][k]*u[i][k])
+				for (k=l; k < n; k++) 
+					u[j][k]+=s*e[k]
+			}	
+		}
+		y= Math.abs(q[i])+Math.abs(e[i])
+		if (y>x) 
+			x=y
+	}
+	
+	// accumulation of right hand gtransformations
+	for (i=n-1; i != -1; i+= -1)
+	{	
+		if (g != 0.0)
+		{
+		 	h= g*u[i][i+1]
+			for (j=l; j < n; j++) 
+				v[j][i]=u[i][j]/h
+			for (j=l; j < n; j++)
+			{	
+				s=0.0
+				for (k=l; k < n; k++) 
+					s += u[i][k]*v[k][j]
+				for (k=l; k < n; k++) 
+					v[k][j]+=(s*v[k][i])
+			}	
+		}
+		for (j=l; j < n; j++)
+		{
+			v[i][j] = 0;
+			v[j][i] = 0;
+		}
+		v[i][i] = 1;
+		g= e[i]
+		l= i
+	}
+	
+	// accumulation of left hand transformations
+	for (i=n-1; i != -1; i+= -1)
+	{	
+		l= i+1
+		g= q[i]
+		for (j=l; j < n; j++) 
+			u[i][j] = 0;
+		if (g != 0.0)
+		{
+			h= u[i][i]*g
+			for (j=l; j < n; j++)
+			{
+				s=0.0
+				for (k=l; k < m; k++) s += u[k][i]*u[k][j];
+				f= s/h
+				for (k=i; k < m; k++) u[k][j]+=f*u[k][i];
+			}
+			for (j=i; j < m; j++) u[j][i] = u[j][i]/g;
+		}
+		else
+			for (j=i; j < m; j++) u[j][i] = 0;
+		u[i][i] += 1;
+	}
+	
+	// diagonalization of the bidiagonal form
+	prec= prec*x
+	for (k=n-1; k != -1; k+= -1)
