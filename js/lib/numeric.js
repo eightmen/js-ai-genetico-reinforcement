@@ -4396,3 +4396,42 @@ numeric.svd= function svd(A) {
 				for (j=0; j < m; j++)
 				{
 					y= u[j][i-1]
+					z= u[j][i]
+					u[j][i-1] = y*c+z*s
+					u[j][i] = -y*s+z*c
+				}
+			}
+			e[l]= 0.0
+			e[k]= f
+			q[k]= x
+		} 
+	}
+		
+	//vt= transpose(v)
+	//return (u,q,vt)
+	for (i=0;i<q.length; i++) 
+	  if (q[i] < prec) q[i] = 0
+	  
+	//sort eigenvalues	
+	for (i=0; i< n; i++)
+	{	 
+	//writeln(q)
+	 for (j=i-1; j >= 0; j--)
+	 {
+	  if (q[j] < q[i])
+	  {
+	//  writeln(i,'-',j)
+	   c = q[j]
+	   q[j] = q[i]
+	   q[i] = c
+	   for(k=0;k<u.length;k++) { temp = u[k][i]; u[k][i] = u[k][j]; u[k][j] = temp; }
+	   for(k=0;k<v.length;k++) { temp = v[k][i]; v[k][i] = v[k][j]; v[k][j] = temp; }
+//	   u.swapCols(i,j)
+//	   v.swapCols(i,j)
+	   i = j	   
+	  }
+	 }	
+	}
+	
+	return {U:u,S:q,V:v}
+};
