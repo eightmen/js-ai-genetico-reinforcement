@@ -51,3 +51,67 @@
   var exprimentFileName = "experiment-" + currentDateString()+".csv";
 
   exprimentFileName = 'experiment.csv';
+
+  // test save
+  // saveFile("test.csv", 'blah');
+
+  console.log("Total number of weights: " + (game.inputSize * numHiddenNeurons + numHiddenNeurons * game.numActions));
+
+  for(var x = 0; x < populationSize; x++){
+    var individual = new Individual();
+    individual.init(game.inputSize, numHiddenNeurons, game.numActions);
+    population[x] = individual;
+  }
+
+  // Initialize workers
+  var individualCountPerWorker =  Math.round(populationSize/workerCount);
+
+  var workers = [];
+  for(var i = 0; i < workerCount; i++){
+    var worker = new Worker("js/worker.js");
+    workers.push(worker);
+
+    worker.addEventListener('message', handleWorkerMessage);
+
+  }
+
+  // keeping track of individualScores
+  var individualScores = [];
+  var individualScoresSubArrays = [];
+  var threadReadyCount = 0;
+
+
+  function handleWorkerMessage(msg){
+    var data = msg.data;
+    // console.log("Received message from worker:" + data.workerIndex);
+
+    // add scores to subarrays
+    individualScoresSubArrays[data.workerIndex] = data.individualScores;
+    threadReadyCount++;
+    GAMECOUNT += data.GAMECOUNT;
+    TIMEOUTGAMES += data.TIMEOUTGAMES;
+
+    if(threadReadyCount == workerCount){
+      postIterateGeneration();
+    }
+
+  }
+
+  var gen = 0;
+
+  
+
+  function preIterateGeneration(){
+
+    // PHASE I: evaluate each individual
+
+    // Single threaded
+    // for(var x = 0; x < population.length; x++){
+    //   individualScores[x] = envFitness(population[x], mazeGame, fitnessRepeat);
+    // }
+
+    // kick off individual
+    var totalPopulationSent = 0;
+
+    // reset global state for MT
+    individualScoresSubArrays = [];
