@@ -195,3 +195,74 @@
     // console.log("["+gen+"] mean population score: " + populationMean + " time " + (curTime - prevTime)/1000);
     
     experimentStats['eliteMean'].push(eliteMean);
+    experimentStats['populationMean'].push(populationMean);
+
+    if(gen % 10 == 0 || gen == genCount - 1){
+      writeExperimentStats(experimentStats, exprimentFileName);
+    }
+
+    prevTime = curTime;
+    // console.log("Max score: " + individualScores[individualScoresSortedIndices[0]]);
+
+    population = newPopulation;
+
+    gen++;
+
+    // kick off
+    if(gen == genCount){
+      // done
+      console.log("Done");
+
+      // write CSV
+      // writeExperimentStats(experimentStats, exprimentFileName);
+
+      console.log("Total games played: " + GAMECOUNT);
+      console.log("Fraction of games timed-out: " + TIMEOUTGAMES/GAMECOUNT);
+    }else{
+      preIterateGeneration();
+    }
+
+  }
+
+  // kick of generation loop
+  preIterateGeneration();
+
+  function individualPlay(individual, time){
+    game.reset();
+
+    if(!time){
+      time = 200;
+    }
+
+    var gameLoop = setInterval(function(){
+
+      var action = individual.getAction(game.getFeatureVector())
+      var status = game.step(action);
+      game.render(ctx, canv.width, canv.height);
+
+      if(status[0]){
+        clearInterval(gameLoop);
+        console.log("Game ended, score: " + status[1]);
+      }
+    }, time);
+
+  }
+
+  window.individualPlay = individualPlay;
+
+  function mutateIndividual(individual, genFraction, probability, mr){
+
+    if(!probability){
+      probability = .1;
+    }
+    if(!mr){
+      mr = .1;
+    }
+
+    if(MUTATIONDECAY){
+      mr *= ((1 - genFraction)/(1/.95)) + 0.05; // linear scaling between 
+    }
+
+    // mutate w0
+    for(var r = 0; r < individual.state.w0.length; r++){
+      for(var c = 0; c < individual.state.w0[0].length; c++){
