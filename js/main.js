@@ -115,3 +115,83 @@
 
     // reset global state for MT
     individualScoresSubArrays = [];
+    threadReadyCount = 0;
+    
+    for(var i = 0; i < workerCount; i++){
+
+      var startIndex = totalPopulationSent;
+      var toSendAmount = individualCountPerWorker;
+
+      // make sure it always sends the full population
+      if(i == workerCount-1){
+        toSendAmount = populationSize - totalPopulationSent;
+      }
+
+      // increment
+      totalPopulationSent += toSendAmount;
+
+      var individualStates = [];
+      for(var x = startIndex; x < startIndex+toSendAmount; x++){
+        individualStates.push(population[x].state);
+      }
+
+      workers[i].postMessage({workerIndex: i, fitnessRepeat: fitnessRepeat, maxSteps:maxSteps, individualStates: individualStates});
+
+    }
+  }
+
+  function postIterateGeneration(){
+
+    // merge individualScoresSubArrays
+    individualScores = [];
+
+    for(var i = 0; i < workerCount; i++){
+      individualScores = individualScores.concat(individualScoresSubArrays[i]);
+    }
+
+    // find elites
+    var individualScoresSortedIndices = sortedIndices(individualScores);
+
+    // PHASE II: repopulation phase
+    var newPopulation = [];
+    var eliteMean = 0;
+
+    for(var i = 0; i < eliteCount; i++){
+
+      eliteMean += individualScores[individualScoresSortedIndices[i]];
+
+      var eliteIndividual = population[individualScoresSortedIndices[i]];
+
+      if(i == 0 && gen == genCount -1){
+        window.bestIndividual = cloneIndividual(eliteIndividual);
+      }
+
+      // retain elite
+      newPopulation.push(eliteIndividual);
+
+      // random individual
+      if(RANDOMINDIVIDUALS){
+        var randomIndividual = new Individual();
+        randomIndividual.init(game.inputSize, numHiddenNeurons, game.numActions);
+        newPopulation.push(randomIndividual);
+      }
+      
+      for(var d = 0; d < replicateCount; d++){
+        var clonedIndividual = cloneIndividual(eliteIndividual);
+
+        // apply mutation
+        mutateIndividual(clonedIndividual, gen/(genCount-1), MPR, MR);
+
+        newPopulation.push(clonedIndividual);
+      }
+
+    }
+    eliteMean /= eliteCount;
+
+    var populationMean = individualScores.reduce((x, y) => {return x + y}, 0)/individualScores.length;
+    var curTime = window.performance.now();
+
+    console.log("["+gen+"] mean elite score: " + eliteMean + " time " + (curTime - prevTime)/1000);
+    // console.log("["+gen+"] mean population score: " + populationMean + " time " + (curTime - prevTime)/1000);
+    
+    experimentStats['eliteMean'].push(eliteMean);
