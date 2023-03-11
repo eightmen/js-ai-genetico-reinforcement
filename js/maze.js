@@ -4,4 +4,9 @@ function MazeGame(){
 
   this.numActions = 5;
   
-  this.init = func
+  this.init = function(){
+    this.reset();
+  }
+
+  this.render = function(ctx, width, height){
+    
