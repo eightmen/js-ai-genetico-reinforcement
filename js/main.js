@@ -266,3 +266,40 @@
     // mutate w0
     for(var r = 0; r < individual.state.w0.length; r++){
       for(var c = 0; c < individual.state.w0[0].length; c++){
+
+        if(Math.random() < probability){
+          var scaleFactor = 1 / Math.abs(individual.state.w0[r][c]);
+          if(SCALEFACTOR == false){
+            scaleFactor = 1;
+          }
+          individual.state.w0[r][c] += gaussianRand() * mr * scaleFactor;
+        }
+      }
+    }
+
+    // mutate w1
+    for(var r = 0; r < individual.state.w1.length; r++){
+      for(var c = 0; c < individual.state.w1[0].length; c++){
+
+        if(Math.random() < probability){
+          var scaleFactor = 1 / Math.abs(individual.state.w1[r][c]);
+          if(SCALEFACTOR == false){
+            scaleFactor = 1;
+          }
+          individual.state.w1[r][c] += gaussianRand() * mr * scaleFactor;
+        }
+      }
+    }
+
+  }
+
+  function cloneIndividual(individual){
+    var clone = new Individual();
+
+    clone.state.w0 = arrayCopy(individual.state.w0);
+    clone.state.w1 = arrayCopy(individual.state.w1);
+
+    return clone;
+  }
+
+})();
