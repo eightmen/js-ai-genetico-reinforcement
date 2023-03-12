@@ -16,4 +16,9 @@ function MazeGame(){
     // draw player
     ctx.fillStyle = 'green';
     ctx.beginPath();
-    ctx.rect(this.state.playerPosition[0] * gridElSize, this.state.playerPosition[1] * gridElSize, gridElSi
+    ctx.rect(this.state.playerPosition[0] * gridElSize, this.state.playerPosition[1] * gridElSize, gridElSize, gridElSize);
+    ctx.closePath();
+    ctx.fill();
+
+    // draw enemy
+    ctx
