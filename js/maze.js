@@ -9,4 +9,8 @@ function MazeGame(){
   }
 
   this.render = function(ctx, width, height){
-    
+    ctx.clearRect(0, 0, width, height);
+
+    var gridElSize = width / this.state.gridSize;
+
+    // dr
