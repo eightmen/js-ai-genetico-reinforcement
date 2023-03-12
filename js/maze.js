@@ -13,4 +13,7 @@ function MazeGame(){
 
     var gridElSize = width / this.state.gridSize;
 
-    // dr
+    // draw player
+    ctx.fillStyle = 'green';
+    ctx.beginPath();
+    ctx.rect(this.sta
