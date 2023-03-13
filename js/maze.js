@@ -21,4 +21,6 @@ function MazeGame(){
     ctx.fill();
 
     // draw enemy
-    ctx
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.rect(this.state.enemyPosition[0] * grid
