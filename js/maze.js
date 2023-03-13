@@ -28,4 +28,6 @@ function MazeGame(){
     ctx.fill();
 
     // draw cookies 
-    for (var i = 0; i < this.st
+    for (var i = 0; i < this.state.cookies.length; i++) {
+      if(this.state.cookies[i]){
+        var position
