@@ -35,4 +35,5 @@ function MazeGame(){
         // draw enemy
         ctx.fillStyle = 'blue';
         ctx.beginPath();
-        ctx.rect(position[0] * gridElSize + gridElSize/4, position[1] * g
+        ctx.rect(position[0] * gridElSize + gridElSize/4, position[1] * gridElSize + gridElSize/4, gridElSize/2, gridElSize/2);
+        ctx.closePath();
