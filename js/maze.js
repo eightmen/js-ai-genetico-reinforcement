@@ -37,3 +37,10 @@ function MazeGame(){
         ctx.beginPath();
         ctx.rect(position[0] * gridElSize + gridElSize/4, position[1] * gridElSize + gridElSize/4, gridElSize/2, gridElSize/2);
         ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+
+  this.reset = function(){
+    this.state.ene
