@@ -30,4 +30,8 @@ function MazeGame(){
     // draw cookies 
     for (var i = 0; i < this.state.cookies.length; i++) {
       if(this.state.cookies[i]){
-        var position = [Math.floor(i/this.state.gridSize), i - Math.floor(i/this.state.gridSize) * this.
+        var position = [Math.floor(i/this.state.gridSize), i - Math.floor(i/this.state.gridSize) * this.state.gridSize];
+
+        // draw enemy
+        ctx.fillStyle = 'blue';
+        ctx.be
