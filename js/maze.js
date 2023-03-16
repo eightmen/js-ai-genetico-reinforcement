@@ -43,4 +43,5 @@ function MazeGame(){
   }
 
   this.reset = function(){
-    this.state.ene
+    this.state.enemyPosition = [0, 0];
+    this.state.playerPosition = [0, this.state.gridSize-1];
