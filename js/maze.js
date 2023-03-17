@@ -48,4 +48,9 @@ function MazeGame(){
     this.state.enemyDirection = 0;
     this.state.enemyTock = 0;
     this.state.gameOver = false;
-    this.state.cookies = new Array(this.state.gridSize*this.state.gridSize)
+    this.state.cookies = new Array(this.state.gridSize*this.state.gridSize);
+    this.state.cookieCount = 0;
+    this.state.score = 0;
+  }
+
+  this.inputSi
