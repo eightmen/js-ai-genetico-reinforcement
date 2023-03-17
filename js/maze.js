@@ -53,4 +53,9 @@ function MazeGame(){
     this.state.score = 0;
   }
 
-  this.inputSi
+  this.inputSize = 4;
+
+  this.getFeatureVector = function(){
+    var vector = [];
+
+    // // playe
