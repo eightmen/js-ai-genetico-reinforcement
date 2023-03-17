@@ -58,4 +58,5 @@ function MazeGame(){
   this.getFeatureVector = function(){
     var vector = [];
 
-    // // playe
+    // // player (zero centered - normalized)
+    vector[0] = (this.state.playerPos
