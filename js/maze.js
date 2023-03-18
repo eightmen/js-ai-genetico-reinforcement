@@ -59,4 +59,5 @@ function MazeGame(){
     var vector = [];
 
     // // player (zero centered - normalized)
-    vector[0] = (this.state.playerPos
+    vector[0] = (this.state.playerPosition[0] - this.state.gridSize/2)/this.state.gridSize/2;
+    vector[1] = (this.s
