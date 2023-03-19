@@ -64,4 +64,4 @@ function MazeGame(){
 
     // enemy
     vector[2] = (this.state.enemyPosition[0] - this.state.gridSize/2)/this.state.gridSize/2;
-    vec
+    vector[3] = (this.state.enemyPosition[1] - this.state.gridSize/2)/this.state.grid
