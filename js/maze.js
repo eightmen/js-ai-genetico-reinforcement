@@ -75,4 +75,7 @@ function MazeGame(){
     // vector[1] = this.state.playerPosition[1];
 
     // enemy
-    // vector[2
+    // vector[2] = this.state.enemyPosition[1];
+    // vector[3] = this.state.enemyPosition[1];
+
+    return
