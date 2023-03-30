@@ -78,4 +78,8 @@ function MazeGame(){
     // vector[2] = this.state.enemyPosition[1];
     // vector[3] = this.state.enemyPosition[1];
 
-    return
+    return vector;
+  }
+
+  this.boundCheck = function(position){
+    if(position[0] > this.state.gridSize
