@@ -85,4 +85,6 @@ function MazeGame(){
     if(position[0] > this.state.gridSize - 1){
       position[0] = this.state.gridSize - 1;
     }
-    if(posit
+    if(position[1] > this.state.gridSize - 1){
+      position[1] = this.state.gridSize - 1;
+   
