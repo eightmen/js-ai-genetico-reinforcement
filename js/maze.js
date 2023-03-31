@@ -82,4 +82,7 @@ function MazeGame(){
   }
 
   this.boundCheck = function(position){
-    if(position[0] > this.state.gridSize
+    if(position[0] > this.state.gridSize - 1){
+      position[0] = this.state.gridSize - 1;
+    }
+    if(posit
