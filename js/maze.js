@@ -91,4 +91,10 @@ function MazeGame(){
     if(position[0] < 0){
       position[0] = 0;
     }
-    if(posit
+    if(position[1] < 0){
+      position[1] = 0;
+    }
+    return position;
+  }
+
+  this.s
