@@ -97,4 +97,9 @@ function MazeGame(){
     return position;
   }
 
-  this.s
+  this.step = function(action){
+
+    if(this.state.gameOver == false){
+      // player step
+
+ 
