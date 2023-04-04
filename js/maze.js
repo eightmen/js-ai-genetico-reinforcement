@@ -106,4 +106,5 @@ function MazeGame(){
       if(action == 1){
         this.state.playerPosition[0] -= 1;
       }
- 
+      else if(action == 2){
+        this.state.playerPosition[1] -
