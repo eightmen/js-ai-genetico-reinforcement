@@ -102,4 +102,8 @@ function MazeGame(){
     if(this.state.gameOver == false){
       // player step
 
+      // action = 0 do nothing
+      if(action == 1){
+        this.state.playerPosition[0] -= 1;
+      }
  
