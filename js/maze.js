@@ -117,4 +117,7 @@ function MazeGame(){
       }
       this.state.playerPosition = this.boundCheck(this.state.playerPosition);
 
-      // enemy
+      // enemy step
+      var randEnemyAction = Math.floor(Math.random()*4) + 1;
+
+      // move 
