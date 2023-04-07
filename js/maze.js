@@ -120,4 +120,7 @@ function MazeGame(){
       // enemy step
       var randEnemyAction = Math.floor(Math.random()*4) + 1;
 
-      // move 
+      // move enemy in direction of player
+      // if(Math.random() > 0.5){
+
+      //   randEnemyAction =
