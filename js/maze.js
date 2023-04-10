@@ -123,4 +123,5 @@ function MazeGame(){
       // move enemy in direction of player
       // if(Math.random() > 0.5){
 
-      //   randEnemyAction =
+      //   randEnemyAction = 1;
+      //   if(this.state.enemyPosition[0] < this.state.playerPositio
