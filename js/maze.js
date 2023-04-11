@@ -126,4 +126,5 @@ function MazeGame(){
       //   randEnemyAction = 1;
       //   if(this.state.enemyPosition[0] < this.state.playerPosition[0]){
       //     randEnemyAction = 3;
-      //   }else if (this.state.
+      //   }else if (this.state.enemyPosition[1] < this.state.playerPosition[1]){
+      //     randEnemyAction
