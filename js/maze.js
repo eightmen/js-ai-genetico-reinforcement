@@ -129,4 +129,9 @@ function MazeGame(){
       //   }else if (this.state.enemyPosition[1] < this.state.playerPosition[1]){
       //     randEnemyAction = 4;
       //   }else if (this.state.enemyPosition[1] > this.state.playerPosition[1]){
-    
+      //     randEnemyAction = 2;
+      //   }
+
+      // }
+
+      if(randEnemyAction == 1
