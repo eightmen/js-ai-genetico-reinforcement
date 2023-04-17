@@ -145,4 +145,8 @@ function MazeGame(){
       }
       else if(randEnemyAction == 4){
         this.state.enemyPosition[1] += 1;
-    
+      }
+
+      this.state.enemyPosition = this.boundCheck(this.state.enemyPosition);
+
+      if(this
