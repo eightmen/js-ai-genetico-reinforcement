@@ -149,4 +149,7 @@ function MazeGame(){
 
       this.state.enemyPosition = this.boundCheck(this.state.enemyPosition);
 
-      if(this.state.enemyPosition[0] == this.state.playerPosition[0] && this.state.enemyPosition[
+      if(this.state.enemyPosition[0] == this.state.playerPosition[0] && this.state.enemyPosition[1] == this.state.playerPosition[1]){
+        this.state.gameOver = true;
+      }
+      if(t
