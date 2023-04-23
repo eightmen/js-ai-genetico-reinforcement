@@ -154,4 +154,8 @@ function MazeGame(){
       }
       if(this.state.cookieCount == this.state.gridSize*this.state.gridSize){
         this.state.gameOver = true;
-        this.state.score += this.state.gridSize*this.state.gridSize/
+        this.state.score += this.state.gridSize*this.state.gridSize/2;
+      }
+
+      // player check cookie
+      var cookieKey = this.state.playerPosit
