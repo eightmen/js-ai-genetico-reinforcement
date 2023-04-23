@@ -153,4 +153,5 @@ function MazeGame(){
         this.state.gameOver = true;
       }
       if(this.state.cookieCount == this.state.gridSize*this.state.gridSize){
-        this.sta
+        this.state.gameOver = true;
+        this.state.score += this.state.gridSize*this.state.gridSize/
