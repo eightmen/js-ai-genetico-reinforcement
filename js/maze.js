@@ -158,4 +158,5 @@ function MazeGame(){
       }
 
       // player check cookie
-      var cookieKey = this.state.playerPosit
+      var cookieKey = this.state.playerPosition[0]*this.state.gridSize + this.state.playerPosition[1];
+      if(!this.state.cookies[c
