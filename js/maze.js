@@ -167,4 +167,8 @@ function MazeGame(){
 
         this.state.cookies[cookieKey] = true;
       }else{
-        this.state.
+        this.state.score -= 0.0001;
+      }
+
+      // punish distance to enemy
+      // x0, x1, y0,
