@@ -165,3 +165,6 @@ function MazeGame(){
 
         // (this.state.cookieCount / (this.state.gridSize*this.state.gridSize))
 
+        this.state.cookies[cookieKey] = true;
+      }else{
+        this.state.
