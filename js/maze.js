@@ -171,4 +171,6 @@ function MazeGame(){
       }
 
       // punish distance to enemy
-      // x0, x1, y0,
+      // x0, x1, y0, y1
+
+      // var distancePunishment = Math.pow(Math.min(1, 1/distance(this.state.pla
