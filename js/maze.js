@@ -174,4 +174,7 @@ function MazeGame(){
       // x0, x1, y0, y1
 
       // var distancePunishment = Math.pow(Math.min(1, 1/distance(this.state.playerPosition,this.state.enemyPosition)),2);
-      // if(Math.random() < 0.001
+      // if(Math.random() < 0.001){
+      //   console.log(distancePunishment);
+      // }
+      // this.state.score -= dist
