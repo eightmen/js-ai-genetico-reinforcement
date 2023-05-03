@@ -177,4 +177,10 @@ function MazeGame(){
       // if(Math.random() < 0.001){
       //   console.log(distancePunishment);
       // }
-      // this.state.score -= dist
+      // this.state.score -= distancePunishment;
+
+    }
+    return [this.state.gameOver, this.state.score];
+  }
+
+}
