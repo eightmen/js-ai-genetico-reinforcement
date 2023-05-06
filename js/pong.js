@@ -11,4 +11,8 @@ function PongGame(){
   this.state.game = 0;
   
   this.init = function(){
-  
+    this.reset();
+  }
+
+  this.render = function(ctx, width, height){
+    ctx.fi
