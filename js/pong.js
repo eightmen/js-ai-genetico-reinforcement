@@ -7,4 +7,8 @@ function PongGame(){
   this.state.baseBallVelocity = 2;
   this.state.gameDuration = 21;
 
-  this.
+  this.numActions = 3;
+  this.state.game = 0;
+  
+  this.init = function(){
+  
