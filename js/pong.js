@@ -15,4 +15,8 @@ function PongGame(){
   }
 
   this.render = function(ctx, width, height){
-    ctx.fi
+    ctx.fillStyle = '#904710';
+    ctx.fillRect(0,0, width, height);
+
+    // draw score
+    ct
