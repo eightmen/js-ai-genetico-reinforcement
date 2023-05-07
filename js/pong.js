@@ -19,4 +19,6 @@ function PongGame(){
     ctx.fillRect(0,0, width, height);
 
     // draw score
-    ct
+    ctx.fillStyle = '#9a5c36';
+    ctx.font = "21px Arial";
+    ctx.textAlign = "cent
