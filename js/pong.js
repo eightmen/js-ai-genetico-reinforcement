@@ -21,4 +21,6 @@ function PongGame(){
     // draw score
     ctx.fillStyle = '#9a5c36';
     ctx.font = "21px Arial";
-    ctx.textAlign = "cent
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle"; 
+    ctx.fillText(this.state.score, this.st
