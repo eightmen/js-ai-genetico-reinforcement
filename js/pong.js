@@ -23,4 +23,7 @@ function PongGame(){
     ctx.font = "21px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle"; 
-    ctx.fillText(this.state.score, this.st
+    ctx.fillText(this.state.score, this.state.gridSize/2, this.state.gridSize/2);
+
+    // draw puck
+    ctx.fillStyle
