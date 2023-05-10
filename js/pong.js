@@ -26,4 +26,5 @@ function PongGame(){
     ctx.fillText(this.state.score, this.state.gridSize/2, this.state.gridSize/2);
 
     // draw puck
-    ctx.fillStyle
+    ctx.fillStyle = '#ffd49d';
+    ctx.fillRect(this.state.ballPosition[0]-this.state.puckSize
