@@ -31,4 +31,4 @@ function PongGame(){
 
     // draw player
     ctx.fillStyle = '#5cbb57';
- 
+    ctx.fillRect(this.state.playerPosition[0]-this.state.paddleSize[0]/
