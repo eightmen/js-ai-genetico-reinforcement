@@ -31,4 +31,8 @@ function PongGame(){
 
     // draw player
     ctx.fillStyle = '#5cbb57';
-    ctx.fillRect(this.state.playerPosition[0]-this.state.paddleSize[0]/2, this.state.playerPosition[1]-this.state.paddleSize[1]/2, this.state.paddleSize[0], this.state
+    ctx.fillRect(this.state.playerPosition[0]-this.state.paddleSize[0]/2, this.state.playerPosition[1]-this.state.paddleSize[1]/2, this.state.paddleSize[0], this.state.paddleSize[1]);
+
+    // draw enemy
+    ctx.fillStyle = '#d1844e';
+    ctx.fillRect(this.st
