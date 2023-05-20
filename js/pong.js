@@ -35,4 +35,4 @@ function PongGame(){
 
     // draw enemy
     ctx.fillStyle = '#d1844e';
-    ctx.fillRect(this.st
+    ctx.fillRect(this.state.enemyPosition[0]-this.state.paddleSize[0]/2, this.state.enemyPosition[1]-this.s
