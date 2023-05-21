@@ -41,4 +41,5 @@ function PongGame(){
 
   }
 
-  this.re
+  this.reset = function(){
+    this.state.enemyPosition = [10, this.state.grid
