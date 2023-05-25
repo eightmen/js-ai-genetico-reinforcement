@@ -44,4 +44,6 @@ function PongGame(){
   this.reset = function(){
     this.state.enemyPosition = [10, this.state.gridSize/2];
     this.state.playerPosition = [this.state.gridSize-10, this.state.gridSize/2];
-    this.state.ballPosition = [this.state.gridSize/2, this
+    this.state.ballPosition = [this.state.gridSize/2, this.state.gridSize/2];
+    this.state.ballAngle = 0;
+    this.state.ballVelocity = .5 * this.s
