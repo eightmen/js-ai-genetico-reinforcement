@@ -46,4 +46,7 @@ function PongGame(){
     this.state.playerPosition = [this.state.gridSize-10, this.state.gridSize/2];
     this.state.ballPosition = [this.state.gridSize/2, this.state.gridSize/2];
     this.state.ballAngle = 0;
-    this.state.ballVelocity = .5 * this.s
+    this.state.ballVelocity = .5 * this.state.baseBallVelocity;
+    this.state.gameOver = false;
+    this.state.score = 0;
+    thi
