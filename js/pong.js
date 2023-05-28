@@ -54,4 +54,8 @@ function PongGame(){
 
   this.inputSize = 4;
 
-  this.getFeatureVector = function()
+  this.getFeatureVector = function(){
+    var vector = [];
+
+    // // player (zero centered - normalized)
+    vector[0] = (t
