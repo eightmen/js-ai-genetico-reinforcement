@@ -49,4 +49,9 @@ function PongGame(){
     this.state.ballVelocity = .5 * this.state.baseBallVelocity;
     this.state.gameOver = false;
     this.state.score = 0;
-    thi
+    this.state.game = 0;
+  }
+
+  this.inputSize = 4;
+
+  this.getFeatureVector = function()
