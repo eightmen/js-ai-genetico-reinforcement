@@ -58,4 +58,6 @@ function PongGame(){
     var vector = [];
 
     // // player (zero centered - normalized)
-    vector[0] = (t
+    vector[0] = (this.state.playerPosition[1] - this.state.gridSize/2)/this.state.gridSize/2;
+
+    // ene
