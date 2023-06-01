@@ -61,4 +61,7 @@ function PongGame(){
     vector[0] = (this.state.playerPosition[1] - this.state.gridSize/2)/this.state.gridSize/2;
 
     // enemy
-    vector[1] = (this.state.enemyPosition[1] - this.state.gridSize/2)/this.state.gridSi
+    vector[1] = (this.state.enemyPosition[1] - this.state.gridSize/2)/this.state.gridSize/2;
+
+    // ball
+    vector[2] = (this.state.ballPosition[0] - this.state.gridSize/2)/this.state
