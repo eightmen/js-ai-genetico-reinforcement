@@ -65,4 +65,9 @@ function PongGame(){
 
     // ball
     vector[2] = (this.state.ballPosition[0] - this.state.gridSize/2)/this.state.gridSize/2;
-    vector[3] = (this.state.ballPosition[1] - this.state.gridSize/
+    vector[3] = (this.state.ballPosition[1] - this.state.gridSize/2)/this.state.gridSize/2;
+
+    return vector;
+  }
+
+  this.boundcheck = function(posit
