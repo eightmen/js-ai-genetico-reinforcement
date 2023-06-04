@@ -72,4 +72,6 @@ function PongGame(){
 
   this.boundcheck = function(position){
     if(position[1] > this.state.gridSize - this.state.paddleSize[1]/2){
-      positi
+      position[1] = this.state.gridSize - this.state.paddleSize[1]/2;
+    }
+    if(position[1] < this
