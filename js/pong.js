@@ -74,4 +74,7 @@ function PongGame(){
     if(position[1] > this.state.gridSize - this.state.paddleSize[1]/2){
       position[1] = this.state.gridSize - this.state.paddleSize[1]/2;
     }
-    if(position[1] < this
+    if(position[1] < this.state.paddleSize[1]/2){
+      position[1] = this.state.paddleSize[1]/2;
+    }
+    return po
