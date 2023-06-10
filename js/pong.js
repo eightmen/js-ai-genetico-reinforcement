@@ -77,4 +77,8 @@ function PongGame(){
     if(position[1] < this.state.paddleSize[1]/2){
       position[1] = this.state.paddleSize[1]/2;
     }
-    return po
+    return position;
+  }
+
+  this.returnAngle = function(ballPosition, batPosition){
+    var dis
