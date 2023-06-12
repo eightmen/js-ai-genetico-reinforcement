@@ -81,4 +81,6 @@ function PongGame(){
   }
 
   this.returnAngle = function(ballPosition, batPosition){
-    var distanceFromMiddle = (batPosition - ballPosition)/(this.state.paddleSize[1]/2)
+    var distanceFromMiddle = (batPosition - ballPosition)/(this.state.paddleSize[1]/2);
+
+    this.state.ballVelocity = ((Math.abs(distanceFromMiddle) + 1) * .5) * this.
