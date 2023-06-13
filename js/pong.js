@@ -88,4 +88,5 @@ function PongGame(){
     return distanceFromMiddle * Math.PI/2 + .2;
   }
 
-  this.setAng
+  this.setAngle = function(angle){
+    this.state.ballAngle = this.correctAngleRange(a
