@@ -89,4 +89,8 @@ function PongGame(){
   }
 
   this.setAngle = function(angle){
-    this.state.ballAngle = this.correctAngleRange(a
+    this.state.ballAngle = this.correctAngleRange(angle);
+  }
+
+  this.correctAngleRange = function(angle){
+    while(angle < 0 || angle > M
