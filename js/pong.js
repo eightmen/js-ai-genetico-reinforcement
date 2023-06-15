@@ -96,4 +96,11 @@ function PongGame(){
     while(angle < 0 || angle > Math.PI * 2){
       if(angle < 0){
         angle = angle + Math.PI * 2;
-   
+      }else{
+        angle = angle - Math.PI * 2;
+      }
+    }
+    return angle;
+  }
+
+  thi
