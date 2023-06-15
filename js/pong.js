@@ -93,4 +93,7 @@ function PongGame(){
   }
 
   this.correctAngleRange = function(angle){
-    while(angle < 0 || angle > M
+    while(angle < 0 || angle > Math.PI * 2){
+      if(angle < 0){
+        angle = angle + Math.PI * 2;
+   
