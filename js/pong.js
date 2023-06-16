@@ -103,4 +103,9 @@ function PongGame(){
     return angle;
   }
 
-  thi
+  this.step = function(action){
+
+    if(this.state.gameOver == false){
+
+      // advance ball
+  
