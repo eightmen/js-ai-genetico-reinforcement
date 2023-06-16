@@ -108,4 +108,4 @@ function PongGame(){
     if(this.state.gameOver == false){
 
       // advance ball
-  
+      this.state.ballPosition[0] += this.state.ballVelocity * Math.cos(this.sta
