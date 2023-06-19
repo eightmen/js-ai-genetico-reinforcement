@@ -113,4 +113,6 @@ function PongGame(){
 
       // move players
       if(action == 1){
-        t
+        this.state.playerPosition[1] -= this.state.paddleSpeed;
+      }else if(action == 2){
+        th
