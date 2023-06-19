@@ -109,4 +109,8 @@ function PongGame(){
 
       // advance ball
       this.state.ballPosition[0] += this.state.ballVelocity * Math.cos(this.state.ballAngle);
-      this.state.ballPosition[1] += this.state.ballVelo
+      this.state.ballPosition[1] += this.state.ballVelocity * Math.sin(this.state.ballAngle);
+
+      // move players
+      if(action == 1){
+        t
