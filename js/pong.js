@@ -117,4 +117,7 @@ function PongGame(){
       }else if(action == 2){
         this.state.playerPosition[1] += this.state.paddleSpeed;
       }
-      this.state.playerP
+      this.state.playerPosition = this.boundcheck(this.state.playerPosition);
+
+      // enemy random
+      // var ene
