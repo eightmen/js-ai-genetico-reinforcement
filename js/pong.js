@@ -120,4 +120,6 @@ function PongGame(){
       this.state.playerPosition = this.boundcheck(this.state.playerPosition);
 
       // enemy random
-      // var ene
+      // var enemyAction = Math.floor(Math.random()*3);
+      // puck direction
+      var enem
