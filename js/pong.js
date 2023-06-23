@@ -122,4 +122,7 @@ function PongGame(){
       // enemy random
       // var enemyAction = Math.floor(Math.random()*3);
       // puck direction
-      var enem
+      var enemyAction = 1;
+      
+      if(this.state.ballPosition[1] > this.state.enemyPosition[1]){
+     
