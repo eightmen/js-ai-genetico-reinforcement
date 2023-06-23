@@ -125,4 +125,8 @@ function PongGame(){
       var enemyAction = 1;
       
       if(this.state.ballPosition[1] > this.state.enemyPosition[1]){
-     
+        enemyAction = 2;
+      }
+
+      if(enemyAction == 1){
+        this.state.enemyPosition[1] -
