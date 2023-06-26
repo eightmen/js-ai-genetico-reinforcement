@@ -133,4 +133,6 @@ function PongGame(){
       }else if(enemyAction ==2) {
         this.state.enemyPosition[1] += this.state.paddleSpeed/3;
       }
-      this.state.e
+      this.state.enemyPosition = this.boundcheck(this.state.enemyPosition);
+
+      // check bounce ceilin
