@@ -131,4 +131,6 @@ function PongGame(){
       if(enemyAction == 1){
         this.state.enemyPosition[1] -= this.state.paddleSpeed/3;
       }else if(enemyAction ==2) {
-    
+        this.state.enemyPosition[1] += this.state.paddleSpeed/3;
+      }
+      this.state.e
