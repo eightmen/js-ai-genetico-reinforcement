@@ -135,4 +135,6 @@ function PongGame(){
       }
       this.state.enemyPosition = this.boundcheck(this.state.enemyPosition);
 
-      // check bounce ceilin
+      // check bounce ceiling
+      if(this.state.ballPosition[1] < 0){
+        var hitAngle = this.state.ba
