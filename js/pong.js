@@ -137,4 +137,7 @@ function PongGame(){
 
       // check bounce ceiling
       if(this.state.ballPosition[1] < 0){
-        var hitAngle = this.state.ba
+        var hitAngle = this.state.ballAngle;
+        this.setAngle(-hitAngle);
+      }
+      else if(this.state.ballPositio
