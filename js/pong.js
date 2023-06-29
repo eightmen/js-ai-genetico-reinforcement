@@ -142,4 +142,9 @@ function PongGame(){
       }
       else if(this.state.ballPosition[1] > this.state.gridSize){
         var hitAngle = this.state.ballAngle;
-        
+        this.setAngle(-hitAngle);
+      }
+
+      // check puck position
+      // player side
+     
