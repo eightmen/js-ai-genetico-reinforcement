@@ -140,4 +140,6 @@ function PongGame(){
         var hitAngle = this.state.ballAngle;
         this.setAngle(-hitAngle);
       }
-      else if(this.state.ballPositio
+      else if(this.state.ballPosition[1] > this.state.gridSize){
+        var hitAngle = this.state.ballAngle;
+        
