@@ -147,4 +147,4 @@ function PongGame(){
 
       // check puck position
       // player side
-     
+      if(this.state.ballPosition[0] >= this.state.gridSize - 10 - this.state.paddleS
