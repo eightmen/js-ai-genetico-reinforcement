@@ -150,4 +150,5 @@ function PongGame(){
       if(this.state.ballPosition[0] >= this.state.gridSize - 10 - this.state.paddleSize[0]/2){
 
         // check if player is blocking else score is -1
-        if(this.state.bal
+        if(this.state.ballPosition[1] <= this.state.playerPosition[1] + this.state.paddleSize[1]/2 &&
+          this.sta
