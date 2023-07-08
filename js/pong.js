@@ -154,4 +154,6 @@ function PongGame(){
           this.state.ballPosition[1] >= this.state.playerPosition[1] - this.state.paddleSize[1]/2){
             this.setAngle(Math.PI + this.returnAngle(this.state.ballPosition[1], this.state.playerPosition[1]));
         }else{
-          this.state.sc
+          this.state.score -= 1;
+          this.state.game++;
+          this.state.ballPosit
