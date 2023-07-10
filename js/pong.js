@@ -158,4 +158,5 @@ function PongGame(){
           this.state.game++;
           this.state.ballPosition[0] = this.state.gridSize/2;
           this.state.ballPosition[1] = this.state.gridSize/2;
-          this.setAngle((-.5 +Math.random()) * Math.PI/4 + (Math.round
+          this.setAngle((-.5 +Math.random()) * Math.PI/4 + (Math.round(Math.random()) * Math.PI));
+          this.state.enemyPosition = [10, this.sta
