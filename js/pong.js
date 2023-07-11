@@ -165,4 +165,6 @@ function PongGame(){
       }
 
       // check puck position enemy side
-      
+      if(this.state.ballPosition[0] <= 10 + this.state.paddleSize[0]/2){
+        
+  
