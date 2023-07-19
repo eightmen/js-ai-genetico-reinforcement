@@ -173,4 +173,6 @@ function PongGame(){
             this.setAngle(this.returnAngle(this.state.ballPosition[1], this.state.enemyPosition[1])* -1);
         }else{
           this.state.score += 1;
-          this.s
+          this.state.game++;
+          this.state.ballPosition[0] = this.state.gridSize/2;
+        
