@@ -182,4 +182,5 @@ function PongGame(){
         
       }
 
-      
+      if(this.state.game == this.state.gameDuration){
+        this.state.gameOver = tr
