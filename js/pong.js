@@ -183,4 +183,11 @@ function PongGame(){
       }
 
       if(this.state.game == this.state.gameDuration){
-        this.state.gameOver = tr
+        this.state.gameOver = true;
+      }
+
+    }
+    return [this.state.gameOver, this.state.score];
+  }
+
+}
