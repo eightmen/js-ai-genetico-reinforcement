@@ -91,3 +91,23 @@ function arrayCopy(arr){
   for (var i=0; i<len; ++i){
     copy[i] = arr[i].slice(0);
   }
+  return copy;
+}
+
+function gaussianRand() {
+  var rand = 0;
+  var count = 6;
+  for (var i = 0; i < count; i += 1) {
+    rand += Math.random();
+  }
+
+  return (rand / count - 1/2) * 6;
+}
+
+function sortedIndices(arr){
+  var len = arr.length;
+  var indices = new Array(len);
+  for (var i = 0; i < len; ++i) indices[i] = i;
+  indices.sort(function (a, b) { return arr[a] > arr[b] ? -1 : arr[a] < arr[b] ? 1 : 0; });
+  return indices;
+}
