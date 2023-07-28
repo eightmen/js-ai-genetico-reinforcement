@@ -12,4 +12,9 @@
   self.onmessage = function (msg) {
 
     GAMECOUNT = 0;
-    TIMEOUTGA
+    TIMEOUTGAMES = 0;
+
+    var data = msg.data;
+
+    var individualScores = [];
+    for(var x = 0; x < data.
