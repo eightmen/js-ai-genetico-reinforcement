@@ -17,4 +17,6 @@
     var data = msg.data;
 
     var individualScores = [];
-    for(var x = 0; x < data.
+    for(var x = 0; x < data.individualStates.length; x++){
+
+      var individual = new Indiv
