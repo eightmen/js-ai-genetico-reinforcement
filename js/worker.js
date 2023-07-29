@@ -19,4 +19,7 @@
     var individualScores = [];
     for(var x = 0; x < data.individualStates.length; x++){
 
-      var individual = new Indiv
+      var individual = new Individual();
+      individual.state = data.individualStates[x];
+
+      individual
