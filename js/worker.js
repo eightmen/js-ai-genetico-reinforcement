@@ -22,4 +22,4 @@
       var individual = new Individual();
       individual.state = data.individualStates[x];
 
-      individual
+      individualScores[x] = envFitness(individual, env, data.fitnessRepeat, data.
