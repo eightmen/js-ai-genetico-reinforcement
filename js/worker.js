@@ -22,4 +22,7 @@
       var individual = new Individual();
       individual.state = data.individualStates[x];
 
-      individualScores[x] = envFitness(individual, env, data.fitnessRepeat, data.
+      individualScores[x] = envFitness(individual, env, data.fitnessRepeat, data.maxSteps);
+    }
+
+    self.postMessage({workerIndex: data.workerIndex, individualScores: individua
