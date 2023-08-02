@@ -25,4 +25,8 @@
       individualScores[x] = envFitness(individual, env, data.fitnessRepeat, data.maxSteps);
     }
 
-    self.postMessage({workerIndex: data.workerIndex, individualScores: individua
+    self.postMessage({workerIndex: data.workerIndex, individualScores: individualScores, GAMECOUNT: GAMECOUNT, TIMEOUTGAMES: TIMEOUTGAMES});
+  }
+
+  // set up listener
+  fu
