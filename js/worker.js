@@ -29,4 +29,4 @@
   }
 
   // set up listener
-  fu
+  function envFitness(individual, env, fitnessRepeat, maxSteps){
