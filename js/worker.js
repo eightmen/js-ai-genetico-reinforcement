@@ -30,3 +30,9 @@
 
   // set up listener
   function envFitness(individual, env, fitnessRepeat, maxSteps){
+
+    // mean score
+    var scoreSum = 0;
+
+    for(var i = 0; i < fitnessRepeat; i++){
+   
