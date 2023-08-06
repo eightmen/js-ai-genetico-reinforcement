@@ -35,4 +35,8 @@
     var scoreSum = 0;
 
     for(var i = 0; i < fitnessRepeat; i++){
-   
+      env.reset();
+      GAMECOUNT++;
+      TIMEOUTGAMES++;
+
+      for(var x = 0; x < maxSteps; x+
