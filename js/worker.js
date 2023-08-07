@@ -39,4 +39,8 @@
       GAMECOUNT++;
       TIMEOUTGAMES++;
 
-      for(var x = 0; x < maxSteps; x+
+      for(var x = 0; x < maxSteps; x++){
+  
+        var envFeatureVector = env.getFeatureVector();
+
+      
