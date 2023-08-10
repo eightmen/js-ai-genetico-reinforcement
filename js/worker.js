@@ -45,4 +45,6 @@
 
         // BASELINE: random feature vector
         // var envFeatureVector = [Math.random(), Math.random(), Math.random(), Math.random()];
-        var actio
+        var action = individual.getAction(envFeatureVector);
+
+        // BASELINE: ran
