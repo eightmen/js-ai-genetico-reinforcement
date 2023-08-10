@@ -44,4 +44,5 @@
         var envFeatureVector = env.getFeatureVector();
 
         // BASELINE: random feature vector
-        // var envFeatureVector = [Math.random()
+        // var envFeatureVector = [Math.random(), Math.random(), Math.random(), Math.random()];
+        var actio
