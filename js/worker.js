@@ -47,4 +47,6 @@
         // var envFeatureVector = [Math.random(), Math.random(), Math.random(), Math.random()];
         var action = individual.getAction(envFeatureVector);
 
-        // BASELINE: ran
+        // BASELINE: random action
+        // var action = Math.floor(Math.random()*5);
+       
