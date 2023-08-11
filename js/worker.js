@@ -49,4 +49,8 @@
 
         // BASELINE: random action
         // var action = Math.floor(Math.random()*5);
-       
+        
+        var status = env.step(action);
+  
+        if(status[0] == true){
+          TIMEOUTGAMES
