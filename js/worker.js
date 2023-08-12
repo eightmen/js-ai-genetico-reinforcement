@@ -53,4 +53,11 @@
         var status = env.step(action);
   
         if(status[0] == true){
-          TIMEOUTGAMES
+          TIMEOUTGAMES--;
+          break;
+        }
+      }
+  
+      scoreSum += status[1];
+    }
+   
