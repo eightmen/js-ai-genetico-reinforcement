@@ -60,4 +60,7 @@
   
       scoreSum += status[1];
     }
-   
+    return scoreSum / fitnessRepeat;
+  }
+
+})()
